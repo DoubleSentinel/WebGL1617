@@ -8,17 +8,11 @@ class Planet{
 		this.vertexBuffer = null;
 		this.indexBuffer = null;
 		this.colorBuffer = null;	
-		//Initialisation of the arrays used to construct the object		
-		this.indices = [];
-		this.vertices = [];
-		this.colors = [];
+		
 		
 		//Defines the vertical slice value
 		this._verticalSlices = 20;
-		
-		//Max points to handle per planet
-		this.maxPoints = 100;
-		
+				
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -29,6 +23,8 @@ class Planet{
 		//Creation of a model view matrix specific for the object
 		this.mvMatrix = mat4.create();
 		
+		
+		
 		//Call of the initialisation method
 		this.init();
 		
@@ -38,7 +34,7 @@ class Planet{
 	//Getter/setter for division
 	set division(div){
 		this._division = div;
-		this.initCatmull();
+		this.init();
 	}
 	
 	get division(){
@@ -48,6 +44,7 @@ class Planet{
 	//Getter/setter for vertical slice
 	set verticalSlices(verticalSlices){
 		this._verticalSlices = verticalSlices;
+		this.init();
 	}
 	
 	get verticalSlices(){
@@ -57,11 +54,21 @@ class Planet{
 	//Initialisation method of a planet object
 	init()
 	{	
-		for (var i = 0.0; i <= this.maxPoints; i++){
-			this.vertices.push(1.0/this.maxPoints * i, 0, 0);
+	
+		this.clearBuffers();
+	
+		//Initialisation of the arrays used to construct the object		
+		this.indices = [];
+		this.vertices = [];
+		this.colors = [];
+		//Generation of points in circle to render the circles based on. Play with this to better understand how it works
+		for (var i = 0.0; i <= this._division; i++){
+			//this.vertices.push(1.0/this._division * i, 0, 0);
+			this.vertices.push(1.0/this._division * i, 0, 0);
 			this.indices.push(i);
 			this.colors.push(this.color.r, this.color.g, this.color.b, 1.0);
 		}
+		
 		this.vertexBuffer = getVertexBufferWithVertices(this.vertices);
 		this.colorBuffer = getVertexBufferWithVertices(this.colors);
 		this.indexBuffer = getIndexBufferWithIndices(this.indices);
@@ -78,6 +85,7 @@ class Planet{
 		this.colorPoints = [];
 		this.indicesPoints = [];
 		
+		this.angleMatrixTab = [];
 		//Creation of the values to render the cattmull rom circle
 		for(var i = 0;i<360;i+=360/this._division)
 		{
@@ -85,8 +93,43 @@ class Planet{
 			this.colorPoints.push(this.color.r, this.color.g, this.color.b, 1.0);
 			this.indicesPoints.push(this.indicesPoints.length);
 		}
+		
+		//Calculates the angle to rotate each slice
+		var angle = 360/this._verticalSlices;
+		
+		//Generation of each rotation matrix for the rendering
+		for(var i = 0;i<this._verticalSlices;i++)
+		{
+			//We rotate the object by the angle 
+			var angleMatrix = mat4.create(); 
+			mat4.rotateY(angleMatrix, angleMatrix, glMatrix.toRadian(angle*i));
+			this.angleMatrixTab.push(angleMatrix)
+		}
+		
+		//Push of the first index to complete the circle
 		this.indicesPoints.push(0);
+		
+		//Sets the alpha to 0.5 for catmullrom
+		glContext.uniform1f(prg.alpha, 0.5);
 	}
+	
+	//This method clears the buffer
+	clearBuffers()
+	{
+		if(this.vertexBuffer != null)
+		{
+			glContext.deleteBuffer(this.vertexBuffer);
+		}
+		if(this.colorBuffer != null)
+		{
+			glContext.deleteBuffer(this.colorBuffer);
+		}
+		if(this.indexBuffer != null)
+		{
+			glContext.deleteBuffer(this.indexBuffer);
+		}
+	}
+	
 	
 	//Draw curve function to handle cattmull rom drawing
 	drawCurve(x0, y0, x1, y1, x2, y2, x3, y3)
@@ -103,26 +146,12 @@ class Planet{
 		glContext.uniform2fv(prg.p2Uniform, p2);
 		glContext.uniform2fv(prg.p3Uniform, p3);	
 		
-		//Transfer of the vertices for the planet
-		glContext.bindBuffer(glContext.ARRAY_BUFFER, this.vertexBuffer);
-		glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
-		//Transfer of the colors for the planet
-		glContext.bindBuffer(glContext.ARRAY_BUFFER, this.colorBuffer);
-		glContext.vertexAttribPointer(prg.colorAttribute, 4, glContext.FLOAT, false, 0, 0);
-		//Transfer the indexes for the planet
-		glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-		
-		//Calculates the angle to rotate each slice
-		var angle = 360/this._verticalSlices;
-		//Creation of a temporary matrix
-		var finalmvMatrix = mat4.create();
+
 		//For each vertical slices
 		for(var i = 0;i<this._verticalSlices;i++)
 		{			
-			//We rotate the object by the angle 
-			mat4.rotateY(finalmvMatrix, this.mvMatrix, glMatrix.toRadian(angle*i));
 			//Transfer the model view with rotation
-			glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, finalmvMatrix);
+			glContext.uniformMatrix4fv(prg.rotMatrixUniform, false, this.angleMatrixTab[i]);
 			//Draw the object with line_strip
 			glContext.drawElements(glContext.LINE_STRIP, this.indices.length, glContext.UNSIGNED_SHORT,0);
 		}
@@ -138,12 +167,20 @@ class Planet{
 		//Multiplies the model View matrix of the object with the view matrix of the scene
 		mat4.multiply(this.mvMatrix, this.mvMatrix, mvMatrix);
 		
+		glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, this.mvMatrix);
+		
 		//We activate the render sphere with catmull rom
 		glContext.uniform1i (prg.sphereRender , 1); 
-		//Sets the alpha to 0.5 for catmullrom
-		glContext.uniform1f(prg.alpha, 0.5);
 		
 		
+		//Transfer of the vertices for the planet
+		glContext.bindBuffer(glContext.ARRAY_BUFFER, this.vertexBuffer);
+		glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
+		//Transfer of the colors for the planet
+		glContext.bindBuffer(glContext.ARRAY_BUFFER, this.colorBuffer);
+		glContext.vertexAttribPointer(prg.colorAttribute, 4, glContext.FLOAT, false, 0, 0);
+		//Transfer the indexes for the planet
+		glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 		
 		
 			//If there is at least 3 points, render the begining of the circle and the last division aswell

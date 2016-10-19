@@ -18,6 +18,7 @@
 			attribute vec4 aColor;
 			uniform mat4 uMVMatrix;
 			uniform mat4 uPMatrix;
+			uniform mat4 uRotMatrix;
 			varying vec4 vColor;
 			
 			uniform vec2 uP0;
@@ -54,7 +55,7 @@
 					vec2 B1 = (t2 - t) / (t2 - t0) * A1 + (t - t0) / (t2 - t0) * A2;
 					vec2 B2 = (t3 - t) / (t3 - t1) * A2 + (t - t1) / (t3 - t1) * A3;
 					vec2 C = (t2 - t) / (t2 - t1) * B1 + (t - t1) / (t2 - t1) * B2;
-					gl_Position = uPMatrix * uMVMatrix * vec4(C, aVertexPosition.z, 1.0);
+					gl_Position = uPMatrix * uMVMatrix * uRotMatrix * vec4(C, aVertexPosition.z, 1.0);
 				
 				
 				}
@@ -90,11 +91,13 @@
 		<canvas id="webgl-canvas" width="500" height="500">
 		  HTML5 is not supported
 		</canvas>
+		<br/>
 		<!-- vertical slices slider -->
-		Vertical slices : <input type="range" value="20" min="2" max="100" onchange="changeSlices(this)" />
+		Vertical slices : <input type="range" value="20" min="2" max="50" onchange="changeSlices(this)" />
+		<br/>
 		<!--catmull points slider -->
 		Catmull points : <input type="range" value="20" min="3" max="100" onchange="changePoints(this)" />
-		
+		<br/>
 		<!-- perspective/orthogonal projection button -->
 		<button id="switchWireframe" onclick="changeProjection()">Perspective / Orthogonal</button>
     </body>

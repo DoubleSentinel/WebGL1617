@@ -72,6 +72,8 @@ function initShaderParameters(prg)
 	prg.pMatrixUniform          = glContext.getUniformLocation(prg, 'uPMatrix');
 	//Linking of the uniform [mat4] for the movement matrix
 	prg.mvMatrixUniform         = glContext.getUniformLocation(prg, 'uMVMatrix');
+	//Linking of the uniform [mat4] for the movement matrix
+	prg.rotMatrixUniform         = glContext.getUniformLocation(prg, 'uRotMatrix');
 	//Linking 4 uniform values to send out the points for Catmull Rom
 	prg.p0Uniform = glContext.getUniformLocation(prg, 'uP0');
 	prg.p1Uniform = glContext.getUniformLocation(prg, 'uP1');
@@ -129,16 +131,17 @@ function drawScene()
 		orbits[i].tick();
 	}
 	
+	
+	//Reseting the mvMatrix
+	mat4.identity(mvMatrix);
+		
+	//Handling the mouse rotation on the scene
+	rotateModelViewMatrixUsingQuaternion();
+	
 	//Calling draw for each object in our scene
 	for(var i= 0;i<sceneObjects.length;i++)
-	{
-		//Reseting the mvMatrix
-		mat4.identity(mvMatrix);
-		
-		//Handling the mouse rotation on the scene
-		rotateModelViewMatrixUsingQuaternion();
-		
-		//Calling draw on the object with the model view matrix
+	{		
+		//Calling draw on the object with the model view matrix as parameter
 		sceneObjects[i].draw(mvMatrix);
 	}
 
