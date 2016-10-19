@@ -20,26 +20,26 @@
 			uniform mat4 uPMatrix;
 			uniform mat4 uRotMatrix;
 			varying vec4 vColor;
-			
+
 			uniform vec2 uP0;
 			uniform vec2 uP1;
 			uniform vec2 uP2;
 			uniform vec2 uP3;
 			uniform float uAlpha;
 			uniform int sphereRender;
-			
+
 			float tj(float ti, float xi, float yi, float xj, float yj)
 			{
 				float dx = xj - xi;
 				float dy = yj - yi;
 				return pow(sqrt(dx * dx + dy * dy), uAlpha) + ti;
 			}
-			
-			
+
+
 			void main(void) {
 				gl_PointSize = 5.0;
 				vColor = aColor;
-				
+
 				//Catmull rom algorithm
 				if(sphereRender == 1)
 				{
@@ -56,17 +56,15 @@
 					vec2 B2 = (t3 - t) / (t3 - t1) * A2 + (t - t1) / (t3 - t1) * A3;
 					vec2 C = (t2 - t) / (t2 - t1) * B1 + (t - t1) / (t2 - t1) * B2;
 					gl_Position = uPMatrix * uMVMatrix * uRotMatrix * vec4(C, aVertexPosition.z, 1.0);
-				
-				
 				}
 				else
 				{
 					gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
 				}
-			
-				
-				
-			}            
+
+
+
+			}
         </script>
 		<!-- fragment shader -->
         <script id="shader-fs" type="x-shader/x-fragment">
