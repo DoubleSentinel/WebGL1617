@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" href="css/stylesheet.css">
+		<!-- import of webgl utilities -->
+        <script src="./js/commonFunctions.js"></script>
+        <script src="./js/gl-matrix-min.js"></script>
+        <script src="./js/webglTools.js"></script>
+		<script src="debug/webgl-debug.js"></script>
+		<!-- import application scripts -->
+        <script src="./js/scene.js"></script>
+		<script src="./js/orbit.js"></script>
+        <script src="./js/planet.js"></script>
+		<!-- vertex shader -->
+        <script id="shader-vs" type="x-shader/x-vertex">
+            attribute vec3 aVertexPosition;
+			attribute vec4 aColor;
+			uniform mat4 uMVMatrix;
+			uniform mat4 uPMatrix;
+			varying vec4 vColor;
+			
+			void main(void) {
+				gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+				vColor = aColor;
+			}     
+        </script>
+		<!-- fragment shader -->
+        <script id="shader-fs" type="x-shader/x-fragment">
+			#ifdef GL_ES
+				precision highp float;
+			#endif
+				varying vec4 vColor;
+				void main(void) {
+				  gl_FragColor = vColor;
+				}
+        </script>
+    </head>
+	<!-- initialize webgl onload -->
+    <body onload="initWebGL()">
+		<script>
+			displayTitle("Ch.07 Projet démo - Planètes avec subdivision", 1,1,1,1,1,1,1);
+		</script>
+		<br>
+			Projet démo afin de faire un rendu de la terre et de la lune, étape 4. Modification du rendu de la planète afin d'utiliser la subdivision pour les sphères. <a href="planet-ch07.zip">Télécharger la démo</a>
+		<br>
+		<!-- webgl canvas -->
+		<canvas id="webgl-canvas" width="500" height="500">
+		  HTML5 is not supported
+		</canvas>
+		<br/>
+		<!-- subdivision slider -->
+		Subdivisions : <input type="range" value="0" min="0" max="7" onchange="changeSubdivision(this)" />
+		<br/>
+		<!-- perspective/orthogonal projection button -->
+		<button id="switchWireframe" onclick="changeProjection()">Perspective / Orthogonal</button>
+    </body>
+    <script src="./js/mouseMotionHandling.js"></script>
+</html>
