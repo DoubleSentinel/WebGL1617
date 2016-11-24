@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>Calcul matriciel</title>
+    <link rel="stylesheet" href="css/stylesheet.css">
+		<!-- import of webgl utilities -->
+    <script src="./js/commonFunctions.js"></script>
+    <script src="./js/gl-matrix-min.js"></script>
+    <script src="./js/tools.js"></script>
+		<script src="debug/webgl-debug.js"></script>
+		<!-- import application scripts -->
+    <script src="./js/matrix.js"></script>
+</head>
+<!--<body onload="initWebGL()">-->
+<body>
+  <h2>Entrer un fichier JSON contenant une matrice</h2>
+  <input type="file" id="fileJson" name="files[]" accept=".json"/>
+  <script>
+    //Récupération du fichier.
+    function changeFileJson(evt){
+      var file = evt.target.files[0];
+      var fileJson = evt.target;
+      var reader = new FileReader();
+      reader.onload = function(){
+        var text = reader.result;
+        var parseText = JSON.parse(text);
+      };
+      reader.readAsText(fileJson.files[0]);
+    }
+    function createMatrix(textJson){
+      if(textJson == undefined || textJson.n == undefined || textJson.A == undefined || textJson.B == undefined){
+        alert("Le fichier contenant la matrice comporte une erreur");
+      }
+      else{
+        matrixA = new Matrix(textJson.n,textJson.A);
+        matrixB = new Matrix(textJson.n,textJson.B);
+      }
+    }
+    document.getElementById("fileJson").addEventListener("change",changeFileJson,false);
+  </script>
+</body>
+</html>
