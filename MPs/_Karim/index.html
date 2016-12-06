@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8"/>
+	<link rel="stylesheet" href="../css/stylesheet.css">
+    <script src="../sharedJs/jquery-3.1.0.min.js"></script>
+    <script src="../sharedJs/gl-matrix-min.js"></script>
+    <script src="../sharedJs/debug/webgl-debug.js"></script>
+    <script src="../sharedJs/webglTools.js"></script>
+    <script src="../sharedJs/commonFunctions.js"></script>
+	
+    <script src="../sharedJs/Tools/BaseObject.js"></script>
+	<script src="../sharedJs/Tools/Camera.js"></script>
+
+    <script src="../sharedJs/InputHandling/KeyboardHandling.js"></script>
+    <script src="../sharedJs/InputHandling/mouseMotionHandling.js"></script>
+	
+    <script src="Views/Scene.js"></script>
+    <script src="Controllers/Controller.js"></script>
+
+    <script src="Objects/Datas/Drawable.js"></script>
+    <script src="Objects/Datas/Quad.js"></script>
+    <script src="Objects/Interfaces/DrawableInterface.js"></script>
+    <script src="Objects/Interfaces/QuadInterface.js"></script>
+	
+    <!-- vertex shader -->
+    <script id="shader-vs" type="x-shader/x-vertex">
+
+	//Quad attributes
+	attribute vec3 aVertexPosition;
+	attribute vec4 aColor;
+
+	//Projection and world rendering
+	uniform mat4 uMVMatrix;
+	uniform mat4 uPMatrix;
+
+	//Values sent to frag
+	varying vec3 vVertexPos;
+	varying vec4 vColor;
+
+	//Getting timestamps
+	uniform float uDeltaTime;
+	uniform float uFullTime;
+
+	void main(void) {
+		//Setting the values sent to frag
+		vColor = aColor;
+		vVertexPos = aVertexPosition;
+
+		//Rendering final positions of vertices in world
+		gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+	}
+
+		</script>
+
+
+		<!-- fragment shader -->
+		<script id="shader-fs" type="x-shader/x-fragment">
+	#ifdef GL_ES
+		precision highp float;
+	#endif
+
+	//Getting variables from vertex shader
+	varying vec4 vColor;
+
+	//Getting timestamps
+	uniform float uDeltaTime;
+	uniform float uFullTime;
+
+	//camera related
+	uniform vec3 uCameraPosition;
+
+	void main(void) {
+		gl_FragColor = vColor;
+	}
+
+		</script>
+	</head>
+<body>
+	<script>
+		  displayTitle("MiniProject Procedural Icebergs", 1,1,1,1,1,1,1);
+	</script>
+
+<!-- webgl canvas -->
+<canvas id="webgl-canvas" width="1000" height="800" style="float: left">
+    HTML5 is not supported
+</canvas>
+
+<div style="float: left">
+    <h1>
+        Camera controls :
+    </h1>
+    <p>
+        WASD : move around <br/>
+        QE : move up and down <br/>
+        YC : rotate camera (you might throw up) <br/>
+        shift : toggle super speed <br/>
+        R : resets camera position to (0, 0, 0) <br/>
+        Use your mouse to look around.
+    </p></div>
+	
+</body>
+</html>

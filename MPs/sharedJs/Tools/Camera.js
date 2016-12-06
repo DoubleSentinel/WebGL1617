@@ -1,6 +1,5 @@
-/**
- * Created by alexandre on 12.10.2016.
- */
+
+
 
 class Camera extends BaseObject {
     constructor(...args){
