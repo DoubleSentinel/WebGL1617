@@ -1,1 +1,0 @@
-A WebGL Project to render an iceberg.
