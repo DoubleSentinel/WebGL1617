@@ -7,33 +7,33 @@
         <script src="./js/commonFunctions.js"></script>
         <script src="./js/gl-matrix-min.js"></script>
         <script src="./js/webglTools.js"></script>
-		<script src="debug/webgl-debug.js"></script>
+		    <script src="debug/webgl-debug.js"></script>
 		<!-- import application scripts -->
         <script src="./js/scene.js"></script>
-		<script src="./js/orbit.js"></script>
+		    <script src="./js/orbit.js"></script>
         <script src="./js/planet.js"></script>
 		<!-- vertex shader -->
         <script id="shader-vs" type="x-shader/x-vertex">
             attribute vec3 aVertexPosition;
-			attribute vec4 aColor;
-			uniform mat4 uMVMatrix;
-			uniform mat4 uPMatrix;
-			varying vec4 vColor;
-			
-			void main(void) {
-				gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
-				vColor = aColor;
-			}     
+      			attribute vec4 aColor;
+      			uniform mat4 uMVMatrix;
+      			uniform mat4 uPMatrix;
+      			varying vec4 vColor;
+
+      			void main(void) {
+      				gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+      				vColor = aColor;
+      			}
         </script>
 		<!-- fragment shader -->
         <script id="shader-fs" type="x-shader/x-fragment">
-			#ifdef GL_ES
-				precision highp float;
-			#endif
-				varying vec4 vColor;
-				void main(void) {
-				  gl_FragColor = vColor;
-				}
+    			#ifdef GL_ES
+    				precision highp float;
+    			#endif
+    				varying vec4 vColor;
+    				void main(void) {
+    				  gl_FragColor = vColor;
+    				}
         </script>
     </head>
 	<!-- initialize webgl onload -->

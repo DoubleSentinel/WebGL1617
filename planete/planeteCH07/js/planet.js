@@ -7,38 +7,35 @@ class Planet{
 		//Initialisation of the buffers within the object for the render area
 		this.vertexBuffer = null;
 		this.indexBuffer = null;
-		this.colorBuffer = null;	
-		
-					
+		this.colorBuffer = null;
+
+
 		this.x = x;
 		this.y = y;
 		this.z = z;
-		
+
 		//Static definition of the subdivision of the perimeter of the planet to creater the various points for the verticies
 		this._subdivision = 0;
-		
+
 		//Creation of a model view matrix specific for the object
 		this.mvMatrix = mat4.create();
-		
-		
-		
+
 		//Call of the initialisation method
 		this.init();
-		
 	}
 
-	
+
 	//Getter/setter for division
 	set subdivision(div){
 		this._subdivision = div;
 		this.init();
 	}
-	
+
 	get subdivision(){
 		return this._subdivision;
 	}
-		
-	//Subdivision function to generate the sphere with an icosahedron	
+
+	//Subdivision function to generate the sphere with an icosahedron
 	fromOneToFourTriangles(v1, v2, v3, depth){
 		//Declaration of temporary arrays for each subdivision
 		var v12 = [];   var v23 = [];   var v31 = [];
@@ -65,15 +62,15 @@ class Planet{
 			v12 = this.normalize(v12, this.radius);
 			v23 = this.normalize(v23, this.radius);
 			v31 = this.normalize(v31, this.radius);
-			
+
 			//We subdivised our new triangles
 			this.fromOneToFourTriangles( v1, v12, v31, depth-1);
 			this.fromOneToFourTriangles( v2, v23, v12, depth-1);
 			this.fromOneToFourTriangles( v3, v31, v23, depth-1);
 			this.fromOneToFourTriangles( v12, v23, v31, depth-1);
 		}
-	}	
-		
+	}
+
 	//Function to normalize a vector
 	normalize(v, radius = 1.0){
 		var d = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
@@ -84,41 +81,41 @@ class Planet{
 		}
 		return v;
 	}
-		
-		
+
+
 	//Initialisation method of a planet object
 	init()
-	{	
-	
+	{
+
 		this.clearBuffers();
-	
-		//Initialisation of the arrays used to construct the object		
+
+		//Initialisation of the arrays used to construct the object
 		this.indices = [];
 		this.vertices = [];
 		this.colors = [];
-		
+
 		//We define the index "count" at 0
 		this.indexCnt = 0;
-		
-		
+
+
 		//Initialisation of the icosahedron
 		this.initIcosahedron();
-		
+
 		console.log(this.colors);
-		
+
 		//We create the buffers on the GPU
 		this.vertexBuffer = getVertexBufferWithVertices(this.vertices);
 		this.colorBuffer = getVertexBufferWithVertices(this.colors);
 		this.indexBuffer = getIndexBufferWithIndices(this.indices);
-		
-		
-		
+
+
+
 	}
-	
-	
+
+
 	//Initialisation of the icosahedron
 	initIcosahedron(){
-		//We define the components to draw the base icosahedron, see : 
+		//We define the components to draw the base icosahedron, see :
 		//And we take into account the radius of each sphere.
 		const X = 0.525731112119133696 * this.radius;
 		const Z = 0.850650808352039932 * this.radius;
@@ -184,10 +181,10 @@ class Planet{
 			this.fromOneToFourTriangles(v1, v2, v3, this._subdivision);
 		}
 	}
-	
-	
-	
-	
+
+
+
+
 	//This method clears the buffer
 	clearBuffers()
 	{
@@ -204,8 +201,8 @@ class Planet{
 			glContext.deleteBuffer(this.indexBuffer);
 		}
 	}
-	
-	
+
+
 	//Draw method of the planet object
 	draw(mvMatrix)
 	{
@@ -215,10 +212,10 @@ class Planet{
 		mat4.translate(this.mvMatrix, this.mvMatrix, vec3.fromValues(this.x, this.y, this.z));
 		//Multiplies the model View matrix of the object with the view matrix of the scene
 		mat4.multiply(this.mvMatrix, this.mvMatrix, mvMatrix);
-		
+
 		glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, this.mvMatrix);
-			
-		
+
+
 		//Transfer of the vertices for the planet
 		glContext.bindBuffer(glContext.ARRAY_BUFFER, this.vertexBuffer);
 		glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
@@ -227,9 +224,9 @@ class Planet{
 		glContext.vertexAttribPointer(prg.colorAttribute, 4, glContext.FLOAT, false, 0, 0);
 		//Transfer the indexes for the planet
 		glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-		
+
 		//We draw the icosahedron as lines
 		glContext.drawElements(glContext.LINES, this.indices.length, glContext.UNSIGNED_SHORT,0);
-		
+
 	}
 }
