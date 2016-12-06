@@ -11,19 +11,44 @@
 		<script src="debug/webgl-debug.js"></script>
 		<!-- import application scripts -->
     <script src="./js/matrix.js"></script>
+
+    <!-- vertex shader -->
+    <script id="shader-vs" type="x-shader/x-vertex">
+        attribute vec3 aVertexPosition;
+  			attribute vec4 aColor;
+  			uniform mat4 uMVMatrix;
+  			uniform mat4 uPMatrix;
+  			varying vec4 vColor;
+  			void main(void) {
+  				vColor = aColor;
+  				gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+  			}
+    </script>
+    <!-- fragment shader -->
+    <script id="shader-fs" type="x-shader/x-fragment">
+			#ifdef GL_ES
+				precision highp float;
+			#endif
+				varying vec4 vColor;
+				void main(void) {
+				  gl_FragColor = vColor;
+				}
+    </script>
 </head>
-<!--<body onload="initWebGL()">-->
 <body>
   <h2>Entrer un fichier JSON contenant une matrice</h2>
   <input type="file" id="fileJson" name="files[]" accept=".json"/>
   <h3>Voici les deux matrices entrées</h3>
   <h4>Matrice A</h4>
-  <table id="matrixATable"></table>
+  <table id="matrixATable">
+  </table>
   <h4>Matrice B</h4>
-  <table id="matrixBTable"></table>
+  <table id="matrixBTable">
+  </table>
   <br/>
   <h2>Résultat</h2>
-  <table id="resultTable"></table>
+  <table id="resultTable">
+  </table>
   <script>
   document.getElementById("fileJson").addEventListener("change",changeFileJson,false);
     //Récupération du fichier.
