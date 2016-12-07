@@ -21,20 +21,24 @@ class Matrix{
     var row = this.rows[row];
     row[column] = value;
   }
-  get(row, column){
+  get(row, column){//Ne marche pas
     return this.rows[row][column];
   }
   //Affichage, qui ne marche pas pour l'instant
   display(tableID){
     //clearTable(tableID);
+    //console.log("display function");
     var table = document.getElementById(tableID);
     var tableRow, tableColumn;
-    for(var i=0; i<this.rows.lenght; i++){
+    //console.log(this.rows.lenght);
+    for(var i=0; i<(this.dim*this.dim)-1; i++){
       tableRow = table.insertRow(-1);
-      for(var j=0; j<this.rows[i].lenght; j++){
+    //  console.log("insertRow");
+      for(var j=0; j<this.dim; j++){
         tableColumn=tableRow.insertCell(j);
         tableColumn.align = "center";
-        tableColumn.innerHTML = this.rows[i][j];
+        console.log("this.rows"+this.rows);
+        tableColumn.innerHTML = this.rows[i][j];//Les indices vont trop loins
       }
     }
   }
