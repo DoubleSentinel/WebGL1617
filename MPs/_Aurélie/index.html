@@ -5,6 +5,7 @@
   <title>Calcul matriciel</title>
     <link rel="stylesheet" href="../css/stylesheet.css">
 		<!-- import of webgl utilities -->
+    <script src="../sharedJs/jquery-3.1.0.min.js"></script>
     <script src="../sharedJs/commonFunctions.js"></script>
     <script src="../sharedJs/gl-matrix-min.js"></script>
     <script src="../sharedJs/webglTools.js"></script>
@@ -36,15 +37,6 @@
     </script>
     <!--WebGL logique-->
     <script>
-    //créer un canevas mais ne l'ajoute pas dans le DOM. Pour computational use
-    //From : http://www.vizitsolutions.com/portfolio/webgl/gpgpu/implementation.html (07.12.16)
-      /*function makeGPCanevas(width,height){
-        var canvas;
-        canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        canvas.id = 'webgl-canvas'
-      }*/
       //From: ch10ex1b
       var vertexBuffer = null;
       var indexBuffer = null;
@@ -56,6 +48,9 @@
       var mvMatrix = mat4.create();
       var pMatrix = mat4.create();
       var textureSize = 1024;
+      var currentTextureIndx;
+			var rttFramebuffer = new Array();
+		  var rttTexture = new Array();
       //From: ch10ex1b
       function initShaderParameters(prg){
         prg.vertexPositionAttribute = glContext.getAttribLocation(prg, "aVertexPosition");
@@ -68,9 +63,54 @@
         prg.uColorTexture 			= glContext.getUniformLocation(prg, "uColorTexture");
       }
 
+      function initTextureFramebuffer(index) {
+		        rttFramebuffer[index] = glContext.createFramebuffer();
+		        glContext.bindFramebuffer(glContext.FRAMEBUFFER, rttFramebuffer[index]);
+		        rttFramebuffer[index].width = textureSize;
+		        rttFramebuffer[index].height = textureSize;
+		        rttTexture[index] = glContext.createTexture();
+		        glContext.bindTexture(glContext.TEXTURE_2D, rttTexture[index]);
+		        glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
+				    glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.NEAREST);
+		        glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, rttFramebuffer[index].width,
+		        rttFramebuffer[index].height, 0, glContext.RGBA, glContext.UNSIGNED_BYTE, null);
+		        var renderbuffer = glContext.createRenderbuffer();
+		        glContext.bindRenderbuffer(glContext.RENDERBUFFER, renderbuffer);
+		        glContext.renderbufferStorage(glContext.RENDERBUFFER, glContext.DEPTH_COMPONENT16,
+		        rttFramebuffer[index].width, rttFramebuffer[index].height);
+		        glContext.framebufferTexture2D(glContext.FRAMEBUFFER, glContext.COLOR_ATTACHMENT0,
+		        glContext.TEXTURE_2D, rttTexture[index], 0);
+		        glContext.framebufferRenderbuffer(glContext.FRAMEBUFFER, glContext.DEPTH_ATTACHMENT,
+		        glContext.RENDERBUFFER, renderbuffer);
+		        glContext.bindTexture(glContext.TEXTURE_2D, null);
+		        glContext.bindRenderbuffer(glContext.RENDERBUFFER, null);
+		        glContext.bindFramebuffer(glContext.FRAMEBUFFER, null);
+		    }
+        function nMatrixFct(){
+				  var nMatrix = mat4.create();
+			    mat4.copy(nMatrix, mvMatrix);
+			    mat4.invert(nMatrix, nMatrix);
+			    mat4.transpose(nMatrix, nMatrix);
+			    glContext.uniformMatrix4fv(prg.nMatrixUniform, false, nMatrix);
+			}
+      function identityMatrices() {
+				mat4.identity(pMatrix);
+				mat4.identity(mvMatrix);
+				glContext.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
+				glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, mvMatrix);
+				nMatrixFct();
+			}
+
+      //From : http://www.vizitsolutions.com/portfolio/webgl/gpgpu/implementation.html
+    /*  function getStandardGeomatry(){
+        return new Float32Array([-1.0, 1.0, 0.0, 0.0, 1.0, //upper left
+                                  -1.0, -1.0, 0.0, 0.0, 0.0,//lower left
+                                  1.0, 1.0, 0.0, 1.0, 1.0,//upper right
+                                  1.0, -1.0, 0.0, 1.0, 0.0]);//lower right
+      }*/
+
       function initWebGL(){
-      //  makeGPCanevas(128,128);//La taille du canevas correspond à la taille des textures
-        glContext = getGLContext('webgl-canvas');
+        glContext = GLTools_getGLContext('webgl-canvas');
         console.log("glContext "+glContext);
       }
     </script>
