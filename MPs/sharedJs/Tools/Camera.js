@@ -85,13 +85,13 @@ class Camera extends BaseObject {
 
     rotateLeft() {
         var rotQuat = quat.create();
-        quat.setAxisAngle(rotQuat, this.front, degToRad(-5));
+        quat.setAxisAngle(rotQuat, this.front, GLTools_degToRad(-5));
         this.updateVectorsFromQuat(rotQuat);
     }
 
     rotateRight() {
         var rotQuat = quat.create();
-        quat.setAxisAngle(rotQuat, this.front, degToRad(5));
+        quat.setAxisAngle(rotQuat, this.front, GLTools_degToRad(5));
         this.updateVectorsFromQuat(rotQuat);
     }
 
