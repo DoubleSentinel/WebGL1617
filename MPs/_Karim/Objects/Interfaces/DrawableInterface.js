@@ -1,7 +1,3 @@
-/**
- * Created by alexandre on 28.09.2016.
- */
-
 class DrawableInterface {
     constructor() {
         if (new.target === DrawableInterface) {

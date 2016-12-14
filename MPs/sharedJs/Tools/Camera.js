@@ -1,6 +1,3 @@
-
-
-
 class Camera extends BaseObject {
     constructor(...args){
         super(args);
