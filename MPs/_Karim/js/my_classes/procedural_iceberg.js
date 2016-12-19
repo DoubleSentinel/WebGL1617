@@ -8,8 +8,7 @@ var colorBuffer = null;
 
 var indices = [];
 var vertices = [];
-var colors = []; 
-
+var colors = [];
 
 var mvMatrix = mat4.create();
 var pMatrix = mat4.create();
@@ -51,8 +50,7 @@ function initShaderParameters(prg) {
 }
 
 function initBuffers() {
-    // createCube();
-	createBlockyBindingBox(0,0,0,10);
+	createBlockyBindingBox(0,0,0,Math.random()*10 + 5);
     vertexBuffer = getVertexBufferWithVertices(vertices);
     colorBuffer = getVertexBufferWithVertices(colors); 
     indexBuffer = getIndexBufferWithIndices(indices);
@@ -60,6 +58,13 @@ function initBuffers() {
 
 function createBlockyIceberg(x,y,z){
 
+}
+
+function generateHull(points){
+    var instance = new QuickHull(points);
+    instance.build();
+    var triangles = instance.collectFaces(false);
+    console.log(triangles);
 }
 
 function createBlockyBindingBox(x,y,z, height=Math.floor(Math.random()*20)+5){
@@ -73,6 +78,11 @@ function createBlockyBindingBox(x,y,z, height=Math.floor(Math.random()*20)+5){
     *  H  = D(0.9)    -third plane === {H(0.5),H(0.9)} <- at random
     *  h2 -----------|
     *                 -fourth plane = H - h1*/
+    //resetting tabs
+    vertices = [];
+    indices = [];
+    colors = [];
+
     //setting procedural heights
     var d1 = height;
     var D = d1*10;
@@ -81,8 +91,8 @@ function createBlockyBindingBox(x,y,z, height=Math.floor(Math.random()*20)+5){
 
     //now setting procedural rules for quad binding boxes dimensions
     var dimensionTopPlane = (height*(0.5*Math.random()+1))/2;
-    var dimensionWaterPlane = dimensionTopPlane*((1.9-1.1)*Math.random()+1.1);
-    var dimensionIntermediatePlane = dimensionTopPlane*((1.2-0.9)*Math.random()+0.9);
+    var dimensionWaterPlane = dimensionTopPlane*((2.9-1.1)*Math.random()+1.1);
+    var dimensionIntermediatePlane = dimensionWaterPlane*((1.8-0.9)*Math.random()+0.9);
     var dimensionBottomPlane = dimensionTopPlane*((0.9-0.6)*Math.random()+0.6);
 
     //now generating points for each plane
@@ -134,6 +144,8 @@ function createBlockyBindingBox(x,y,z, height=Math.floor(Math.random()*20)+5){
     colors.push(1.0,1.0,1.0,1.0);
     colors.push(1.0,1.0,1.0,1.0);
 
+    generateHull(vertices);
+
     indices.push(
                 0,1,2,
                 0,1,3,
@@ -143,38 +155,8 @@ function createBlockyBindingBox(x,y,z, height=Math.floor(Math.random()*20)+5){
                 8,9,11,
                 12,13,14,
                 12,13,15
-                )
-}
+                );
 
-function createCube() {
-    var transparency = 0.5;
-	
-	//bottom square
-	vertices.push(1.0,1.0,0.0);
-	vertices.push(-1.0,1.0,0.0);
-	vertices.push(-1.0,-1.0,0.0);
-	vertices.push(1.0,-1.0,0.0);
-	
-	//top square
-	vertices.push(1.0,1.0,2.0);
-	vertices.push(-1.0,1.0,2.0);
-	vertices.push(-1.0,-1.0,2.0);
-	vertices.push(1.0,-1.0,2.0);
-	
-	//bottom square colors
-    colors.push(1.0, 0.0, 0.0, transparency);
-    colors.push(0.9, 0.1, 0.0, transparency);
-    colors.push(0.0, 0.1, 0.9, transparency);
-    colors.push(0.0, 0.2, 0.8, transparency);
-	
-	//top square colors
-	colors.push(0.0, 0.9, 0.1, transparency);
-    colors.push(0.0, 0.8, 0.2, transparency);
-    colors.push(0.0, 0.1, 0.9, 1.0);
-    colors.push(0.0, 0.1, 0.8, 1.0);
-	
-	//building cube
-	indices.push(0,1,2,6,3,7,4,6,5,1,4,0,3,2);
 }
 
 function drawScene() {
