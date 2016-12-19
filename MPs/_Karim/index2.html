@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="../../css/stylesheet.css">
+    <script src="tools/gl-matrix-min.js"></script>
+    <script src="../sharedJs/debug/webgl-debug.js"></script>
+    <script src="tools/webglTools.js"></script>
+    <script src="tools/commonFunctions.js"></script>
+
+    <!-- /////////////////\\\\\\\\\\\\\\\\ -->
+    <!-- //////////VERTEX SHADER\\\\\\\\\\ -->
+    <!-- /////////////////\\\\\\\\\\\\\\\\ -->
+    <script id="shader-vs" type="x-shader/x-vertex">
+        attribute vec3 aVertexPosition;
+        attribute vec4 aColor;
+        uniform mat4 uMVMatrix;
+        uniform mat4 uPMatrix;
+		varying vec2 vSquares;
+		varying vec4 vColor;
+		varying vec3 vVertexPosition;
+        void main(void) {
+			vColor = aColor;
+			vVertexPosition = aVertexPosition;
+			gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+        }
+    </script>
+
+    <!-- //////////////////\\\\\\\\\\\\\\\\\ -->
+    <!-- //////////FRAGMENT SHADER\\\\\\\\\\ -->
+    <!-- //////////////////\\\\\\\\\\\\\\\\\ -->
+    <script id="shader-fs" type="x-shader/x-fragment">
+        #ifdef GL_ES
+          precision highp float;
+        #endif
+		varying vec4 vColor;
+		varying vec3 vVertexPosition;
+        void main(void) {
+			gl_FragColor = vColor;
+		}
+        
+    </script>
+    <script src="./js/KARIM_Challenge_Cube_with_TRIANGLE_STRIP.js"></script>
+
+</head>
+<body onload="initWebGL()">
+
+<canvas id="webgl-canvas" width="750" height="750">
+    HTML5 is not supported
+</canvas>
+<script src="tools/mouseMotionHandling.js"></script>
+</body>
+
+</html>
