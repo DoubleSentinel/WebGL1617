@@ -1,7 +1,3 @@
-/**
- * Created by alexandre on 21.10.2016.
- */
-
 class QuadInterface extends DrawableInterface {
     constructor() {
         super();
@@ -20,7 +16,7 @@ class QuadInterface extends DrawableInterface {
         quad.indices.push(0, 1, 2);
         quad.indices.push(3, 2, 1);
 
-        glContext.uniform1f(prg.uDeltaTime, deltaTime);
-        glContext.uniform1f(prg.uFullTime, fullTime);
+        // glContext.uniform1f(prg.uDeltaTime, deltaTime);
+        // glContext.uniform1f(prg.uFullTime, fullTime);
     }
 }

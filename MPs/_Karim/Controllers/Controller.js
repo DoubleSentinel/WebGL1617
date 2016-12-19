@@ -1,7 +1,3 @@
-/**
- * Created by alexandre on 28.09.2016.
- */
-
 var canvasName = 'webgl-canvas';
 var myCanvas;
 var mainCamera = new Camera({pos: vec3.fromValues(0, 0, 10), front: vec3.fromValues(0, 0, -1)});
@@ -32,7 +28,7 @@ $(function () {
 });
 
 function m_initDrawables() {
-    allDrawables.push(new Quad({width: 1, height: 1, r: 0.0, g: 0.5, b: 1.0}));
+    allDrawables.push(new Quad({width: 100, height: 100, r: 0.0, g: 0.5, b: 1.0}));
 }
 
 function m_initEventHandling() {
