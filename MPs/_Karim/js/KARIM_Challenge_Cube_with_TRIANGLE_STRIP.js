@@ -22,23 +22,7 @@ function initCamera(){
 	mat4.identity(mvMatrix);
 	mat4.perspective(pMatrix, 45.0, c_width / c_height, 0.1, 100.0);
 	
-	var rotXQuat = quat.create();
-    quat.setAxisAngle(rotXQuat, vec3.fromValues(1, 0, 0), degToRad(-35));
-
-    var rotZQuat = quat.create();
-    quat.setAxisAngle(rotZQuat, vec3.fromValues(0, 0, 1), degToRad(-60));
-	
-	var rotYQuat = quat.create();
-    quat.setAxisAngle(rotYQuat, vec3.fromValues(0, 1, 0), degToRad(-60));
-	
-    var myQuaternion = quat.create();
-    quat.multiply(myQuaternion, rotZQuat, rotXQuat, rotYQuat);
-
-    var rotationMatrix = mat4.create();
-    mat4.fromQuat(rotationMatrix, myQuaternion);
-    mat4.multiply(mvMatrix, rotationMatrix, mvMatrix);
-	
-	vec3.set (translation, -0.5, 3.0, -5.0);
+	vec3.set (translation, 0, 0, -5.0);
 	mat4.translate (mvMatrix, mvMatrix, translation);
 }
 
@@ -47,10 +31,15 @@ function initScene(){
     glContext.enable(glContext.DEPTH_TEST);
     glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
     glContext.viewport(0, 0, c_width, c_height);
-
     rotateModelViewMatrixUsingQuaternion(true);
+    var translationMatrix = mat4.create();
+    mat4.identity(translationMatrix);
 
-    // mat4.translate(mvMatrix,mvMatrix,vec3(0.5,-3.0,5.0));
+    mat4.translate(translationMatrix,translationMatrix,vec3.create(0.5,-3.0,5.0));
+
+    mat4.multiply(mvMatrix,translationMatrix,mvMatrix);
+
+
 }
 
 function initShaderParameters(prg) {
