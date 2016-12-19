@@ -62,6 +62,9 @@ function initBuffers() {
     indexBuffer = getIndexBufferWithIndices(indices);
 }
 
+function createBlockyIceberg(x,y,z){
+    
+}
 
 function createCube() {
     var transparency = 0.5;
