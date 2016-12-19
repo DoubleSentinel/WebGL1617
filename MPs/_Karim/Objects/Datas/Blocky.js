@@ -3,16 +3,26 @@ class Blocky extends Drawable {
         super(args);
         var {
             cloud = [],
-            bindingbox = []
+            bindingbox = [],
+            height = 1,
+            width = 1,
+            rndseed =  Math.floor(Math.random()*10)
             } = args;
-
+        this._width = width;
+        this._height = height;
         this._cloud = cloud;
         this._bindingbox = bindingbox;
+        this._rndseed = rndseed;
     }
 
     get cloud() {return this._cloud}
-    set cloud(w){this._cloud = w}
+    set cloud(cloud){this._cloud = cloud}
     get bindingbox() {return this._bindingbox}
-    set bindingbox(w){this._bindingbox = w}
-
+    set bindingbox(bbox){this._bindingbox = bbox}
+    get width() {return this._width}
+    set width(w){this._width = w}
+    get height() {return this._height}
+    set height(h){this._height = h}
+    get seed() {return this._rndseed}
+    set seed(h){this._rndseed = h}
 }

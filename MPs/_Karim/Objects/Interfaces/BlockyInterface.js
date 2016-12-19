@@ -22,11 +22,13 @@ class BlockyInterface extends DrawableInterface {
     }
 
     initBlockyCloud(blocky){
-
+        initBindingBox(blocky);
 
     }
 
-    initBindingBox(){
-        
+    initBindingBox(blocky){
+        var backbone = [[blocky._x,blocky._y,blocky._z],
+            [blocky._x,blocky._y,blocky._z - (blocky.height*blocky._rndseed)/Math.floor(Math.random()*5)],
+            [blocky._x,blocky._y,blocky._z - (blocky.height*blocky._rndseed)/Math.floor(Math.random()*5)]]
     }
 }
