@@ -49,6 +49,8 @@
     var texColorTab = new Array(); //stocke les textures
     var textCoords = [];
 
+    var textureSize = 128;
+
     var vertexBuffer = null;
     var indexBuffer = null;
     var colorBuffer = null;
@@ -112,30 +114,16 @@
 				prg.uColorTexture 			= glContext.getUniformLocation(prg, "uColorTexture");
 			}
 
-      function initBuffers(){
-				vertices = [ -1.0, -1.0, 0.0,
-							       1.0, -1.0, 0.0,
-							      -1.0,  1.0, 0.0,
-							      1.0,  1.0, 0.0 ];
-				indices = [ 0, 1, 2, 3 ];
-				textCoords = [  0.0, 0.0,
-								        1.0, 0.0,
-								        0.0, 1.0,
-								        1.0, 1.0 ];
-				vertexBuffer     = getArrayBufferWithArray(vertices);
-				//indexBuffer      = getIndexBufferWithIndices(indices);
-        normalBuffer     = getArrayBufferWithArray(vertices);
-				textCoordsBuffer = getArrayBufferWithArray(textCoords);
-			}
-
       //Paramètres qui déterminent où on va faire le rendu
       var TEXTURE_RENDERING_MODE = 1;
       var SCREEN_RENDERING_MODE = 0;
       var renderPasses = 0;
       var rttFramebuffer = new Array();
+      var rttTexture = new Array();*/
+      var rttFramebuffer = new Array();
       var rttTexture = new Array();
 
-      function initTextureFramebuffer(index) {
+    /*  function initTextureFramebuffer(index) {
       	rttFramebuffer[index] = glContext.createFramebuffer();
         glContext.bindFramebuffer(glContext.FRAMEBUFFER, rttFramebuffer[index]);
         rttFramebuffer[index].width = textureSize;
@@ -157,9 +145,9 @@
         glContext.bindTexture(glContext.TEXTURE_2D, null);
         glContext.bindRenderbuffer(glContext.RENDERBUFFER, null);
         glContext.bindFramebuffer(glContext.FRAMEBUFFER, null);
-      }
-      //Sert à quelque chose ?
-      //var r = 0.0;
+      }*/
+
+    /*  var renderPasses = 0;
 
       function renderInTexture(index){
 			  glContext.viewport(0, 0, rttFramebuffer[index].width, rttFramebuffer[index].height);
@@ -183,15 +171,16 @@
 				glContext.vertexAttribPointer(prg.textureCoordsAttribute, 2, glContext.FLOAT, false, 0, 0);
 				glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, indexBuffer);
 				glContext.drawElements(glContext.TRIANGLE_STRIP, indices.length, glContext.UNSIGNED_SHORT,0);
-		  }
+		  }*/
 
       function generateTextureWith2Darray(data, newTexture){
 				glContext.bindTexture(glContext.TEXTURE_2D, newTexture);
-				glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, glContext.RGBA, glContext.UNSIGNED_BYTE, data);
+				glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, glContext.RGBA, glContext.UNSIGNED_BYTE, data);//Censé prendre le canvas et le passer en texture
+        console.log(data);
 				glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
 				glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.NEAREST);
-		    }
-
+      }
+      /*
         function createBaseTexture(textureSize, texturen){
 			    var c = document.createElement("canvas");
 				  c.width = textureSize;
@@ -219,6 +208,23 @@
 
       var currentTextureIndx;*/
 
+      function createBaseTexture(textureSize, texturen){//Dessiner sur la canvas et le passer en texture Donc c'est là qu'il faudra venir avec les matrices
+        var c = document.createElement("canvas");
+        c.width = textureSize;
+        c.height = textureSize;
+         var ctx = c.getContext("2d");
+         var red = 1;//C'est les couleures qui sont importantes
+         var green = 1;
+         var blue = 1;
+         ctx.fillStyle = "rgb(" + red + "," + green + "," + blue + ")";
+         ctx.fillRect(10,10,textureSize,textureSize);//On s'en fout où est le rectangle
+
+         var anz = texturen.length;
+         texturen[anz] = glContext.createTexture();
+         generateTextureWith2Darray(c, texturen[anz]);
+         console.log(texturen[anz]);
+      }
+
 
       function drawScene(){
         glContext.clearColor(0.0,0.0,0.0,1.0);
@@ -240,53 +246,24 @@
         glContext.vertexAttribPointer(prg.textureCoordsAttribute, 2, glContext.FLOAT, false, 0, 0);
 
         glContext.activeTexture(glContext.TEXTURE0);
-        glContext.bindTexture(glContext.TEXTURE_2D, texColorTab[0]);
+        glContext.bindTexture(glContext.TEXTURE_2D, null);
         glContext.uniform1i(prg.uColorTexture, 0);//Lien pour transmettre la texture au fragment shader
       }
-
-      function initTexture(){
-
-      }
-		/*	function drawScene(){
-        glContext.clearColor(0.0, 0.0, 0.0, 1.0);
-				glContext.enable(glContext.DEPTH_TEST);
-				glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
-				glContext.viewport( 0.0, 0.0, c_width, c_height);
-				mat4.perspective(pMatrix, degToRad(60), c_width / c_height, 0.1, 1000.0);
-        mat4.identity(mvMatrix);
-        mat4.translate(pMatrix, pMatrix, [0.0, 0.0, -4.0]);
-				mat4.multiply(mvMatrix, rotateMatrix, mvMatrix);
-
-				glContext.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
-				glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, mvMatrix);
-			  mat4.copy(nMatrix, mvMatrix);
-			  mat4.invert(nMatrix, nMatrix);
-			  mat4.transpose(nMatrix, nMatrix);
-			  glContext.uniformMatrix4fv(prg.nMatrixUniform, false, nMatrix);
-				glContext.bindBuffer(glContext.ARRAY_BUFFER, normalBuffer);
-				glContext.vertexAttribPointer(prg.vertexNormalAttribute, 3, glContext.FLOAT, false, 0, 0);
-				glContext.bindBuffer(glContext.ARRAY_BUFFER, vertexBuffer);
-				glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
-				glContext.bindBuffer(glContext.ARRAY_BUFFER, textCoordsBuffer);
-				glContext.vertexAttribPointer(prg.textureCoordsAttribute, 2, glContext.FLOAT, false, 0, 0);
-				glContext.activeTexture(glContext.TEXTURE0);
-				glContext.bindTexture(glContext.TEXTURE_2D, texColorTab[0]);
-				glContext.uniform1i(prg.uColorTexture, 0);
-        glContext.uniform1f(prg.deltaTexX, textureOffsetX);
-				glContext.uniform1f(prg.deltaTexY, textureOffsetY);
-        glContext.drawArrays(glContext.TRIANGLES, 0, 36);
-			}*/
 
       function initWebGL(){
         glContext = getGLContext('webgl-canvas');
         console.log("glContext "+glContext);
         var float_texture = glContext.getExtension('OES_texture_float');//active l'extension
         initProgram();
+        console.log("initProgram");
         //prg = glContext.createProgram();
         initBuffers();
+        console.log("initBuffers");
         //A voir si cette fonction est utile
-        //createBaseTexture(textureSize, texColorTab);
+        createBaseTexture(textureSize, texColorTab);
+        console.log("createBaseTexture");
         //initTextureFramebuffer(0);
+        //console.log("initTextureFramebuffer");
         //initTextureFramebuffer(1);
         renderLoop();
       }
@@ -306,6 +283,7 @@
   <h2>Résultat</h2>
   <table id="resultTable">
   </table>
+  <p>webgl-canvas</p>
   <canvas id="webgl-canvas" width="128" height="128">
     HTML5 is not supported
   </canvas>
@@ -347,10 +325,10 @@
           }
         }
         console.log("Matrices construites");
-        matrixA.display('matrixATable');
-        console.log("matrixB");
-        matrixB.display('matrixBTable');
-        console.log("Matrices affichées");
+      //  matrixA.display('matrixATable');
+        //console.log("matrixB");
+        //matrixB.display('matrixBTable');
+        //console.log("Matrices affichées");
       }
     }
     //Clear the table
