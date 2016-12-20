@@ -1,20 +1,20 @@
-import pointLineDistance from 'point-line-distance'
-import getPlaneNormal from 'get-plane-normal'
-import creatLogger from 'debug-fn'
-import dot from 'gl-vec3/dot'
+// import pointLineDistance from 'point-line-distance'
+// import getPlaneNormal from 'get-plane-normal'
+// import creatLogger from 'debug-fn'
+// import dot from 'gl-vec3/dot'
 
-import VertexList from './VertexList'
-import Vertex from './Vertex'
-import Face, {VISIBLE, NON_CONVEX, DELETED} from './Face'
+// import VertexList from './VertexList'
+// import Vertex from './Vertex'
+// import Face, {VISIBLE, NON_CONVEX, DELETED} from './Face'
 
-const debug = creatLogger('quickhull')
+// const debug = creatLogger('quickhull')
 
 // merge types
 // non convex with respect to the large face
 const MERGE_NON_CONVEX_WRT_LARGER_FACE = 1
 const MERGE_NON_CONVEX = 2
 
-export default class QuickHull {
+class QuickHull {
   constructor (points) {
     if (!Array.isArray(points)) {
       throw TypeError('input is not a valid array')
@@ -244,9 +244,9 @@ export default class QuickHull {
       Math.max(Math.abs(min[1]), Math.abs(max[1])) +
       Math.max(Math.abs(min[2]), Math.abs(max[2]))
     )
-    debug(function () {
-      this.log('tolerance %d', me.tolerance)
-    })
+    // debug(function () {
+      // this.log('tolerance %d', me.tolerance)
+    // })
     return [minVertices, maxVertices]
   }
 
@@ -268,6 +268,7 @@ export default class QuickHull {
     let indexMax = 0
     for (i = 0; i < 3; i += 1) {
       const distance = max[i].point[i] - min[i].point[i]
+      // console.log(max)
       if (distance > maxDistance) {
         maxDistance = distance
         indexMax = i
@@ -284,6 +285,7 @@ export default class QuickHull {
         const distance = pointLineDistance(
           vertex.point, v0.point, v1.point
         )
+        // console.log(distance)
         if (distance > maxDistance) {
           maxDistance = distance
           v2 = vertex
@@ -675,7 +677,7 @@ export default class QuickHull {
         }
 
         if (merge) {
-          debug.logger('face merge')
+          // debug.logger('face merge')
           // when two faces are merged it might be possible that redundant faces
           // are destroyed, in that case move all the visible vertices from the
           // destroyed faces to the `unclaimed` vertex list
@@ -722,14 +724,14 @@ export default class QuickHull {
     // `unclaimed` vertex list
     this.removeVertexFromFace(eyeVertex, eyeVertex.face)
     this.computeHorizon(eyeVertex.point, null, eyeVertex.face, horizon)
-    debug(function () {
-      this.log('horizon %j', horizon.map(function (edge) {
-        return edge.head().index
-      }))
-    })
+    // debug(function () {
+      // this.log('horizon %j', horizon.map(function (edge) {
+        // return edge.head().index
+      // }))
+    // })
     this.addNewFaces(eyeVertex, horizon)
 
-    debug.logger('first merge')
+    // debug.logger('first merge')
 
     // first merge pass
     // Do the merge with respect to the larger face
@@ -740,7 +742,7 @@ export default class QuickHull {
       }
     }
 
-    debug.logger('second merge')
+    // debug.logger('second merge')
 
     // second merge pass
     // Do the merge on non convex faces (a face is marked as non convex in the
@@ -753,7 +755,7 @@ export default class QuickHull {
       }
     }
 
-    debug.logger('reassigning points to newFaces')
+    // debug.logger('reassigning points to newFaces')
     // reassign `unclaimed` vertices to the new faces
     this.resolveUnclaimedPoints(this.newFaces)
   }
@@ -764,10 +766,10 @@ export default class QuickHull {
     this.createInitialSimplex()
     while ((eyeVertex = this.nextVertexToAdd())) {
       iterations += 1
-      debug.logger('== iteration %j ==', iterations)
-      debug.logger('next vertex to add = %d %j', eyeVertex.index, eyeVertex.point)
+      // debug.logger('== iteration %j ==', iterations)
+      // debug.logger('next vertex to add = %d %j', eyeVertex.index, eyeVertex.point)
       this.addVertexToHull(eyeVertex)
-      debug.logger('end')
+      // debug.logger('end')
     }
     this.reindexFaceAndVertices()
   }

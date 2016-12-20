@@ -1,23 +1,23 @@
-import createLogger from 'debug-fn'
-import dot from 'gl-vec3/dot'
-import add from 'gl-vec3/add'
-import subtract from 'gl-vec3/subtract'
-import cross from 'gl-vec3/cross'
-import copy from 'gl-vec3/copy'
-import length from 'gl-vec3/length'
-import scale from 'gl-vec3/scale'
-import scaleAndAdd from 'gl-vec3/scaleAndAdd'
-import normalize from 'gl-vec3/normalize'
+// import createLogger from 'debug-fn'
+// import dot from 'gl-vec3/dot'
+// import add from 'gl-vec3/add'
+// import subtract from 'gl-vec3/subtract'
+// import cross from 'gl-vec3/cross'
+// import copy from 'gl-vec3/copy'
+// import length from 'gl-vec3/length'
+// import scale from 'gl-vec3/scale'
+// import scaleAndAdd from 'gl-vec3/scaleAndAdd'
+// import normalize from 'gl-vec3/normalize'
 
-import HalfEdge from './HalfEdge'
+// import HalfEdge from './HalfEdge'
 
-const debug = createLogger('face')
+// const debug = createLogger('face')
 
-export const VISIBLE = 0
-export const NON_CONVEX = 1
-export const DELETED = 2
+const VISIBLE = 0
+const NON_CONVEX = 1
+const DELETED = 2
 
-export default class Face {
+class Face {
   constructor () {
     this.normal = []
     this.centroid = []
@@ -50,7 +50,7 @@ export default class Face {
     let e0 = this.edge
     let e1 = e0.next
     let e2 = e1.next
-    let v2 = subtract([], e1.head().point, e0.head().point)
+    let v2 = sub([], e1.head().point, e0.head().point)
     let t = []
     let v1 = []
 
@@ -58,7 +58,7 @@ export default class Face {
     this.normal = [0, 0, 0]
     while (e2 !== e0) {
       copy(v1, v2)
-      subtract(v2, e2.head().point, e0.head().point)
+      sub(v2, e2.head().point, e0.head().point)
       add(this.normal, this.normal, cross(t, v1, v2))
       e2 = e2.next
       this.nVertices += 1
@@ -90,7 +90,7 @@ export default class Face {
 
       let p1 = maxEdge.tail().point
       let p2 = maxEdge.head().point
-      let maxVector = subtract([], p2, p1)
+      let maxVector = sub([], p2, p1)
       let maxLength = Math.sqrt(maxSquaredLength)
       // maxVector is normalized after this operation
       scale(maxVector, maxVector, 1 / maxLength)
@@ -318,9 +318,9 @@ export default class Face {
     // main half edge reference
     face.edge = e0
     face.computeNormalAndCentroid(minArea)
-    debug(function () {
-      this.log('face created %j', face.collectIndices())
-    })
+    // debug(function () {
+      // this.log('face created %j', face.collectIndices())
+    // })
     return face
   }
 }

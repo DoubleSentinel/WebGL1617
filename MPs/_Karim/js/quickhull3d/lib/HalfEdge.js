@@ -1,9 +1,9 @@
-import distance from 'gl-vec3/distance'
-import squaredDistance from 'gl-vec3/squaredDistance'
-import createLogger from 'debug-fn'
+// import distance from 'gl-vec3/distance'
+// import squaredDistance from 'gl-vec3/squaredDistance'
+// import createLogger from 'debug-fn'
 
-const debug = createLogger('halfedge')
-export default class HalfEdge {
+// const debug = createLogger('halfedge')
+class HalfEdge {
   constructor (vertex, face) {
     this.vertex = vertex
     this.face = face
@@ -44,9 +44,9 @@ export default class HalfEdge {
 
   setOpposite (edge) {
     var me = this
-    debug(function () {
-      this.log(`opposite ${me.tail().index} <--> ${me.head().index} between ${me.face.collectIndices()}, ${edge.face.collectIndices()}`)
-    })
+    // debug(function () {
+      // this.log(`opposite ${me.tail().index} <--> ${me.head().index} between ${me.face.collectIndices()}, ${edge.face.collectIndices()}`)
+    // })
     this.opposite = edge
     edge.opposite = this
   }

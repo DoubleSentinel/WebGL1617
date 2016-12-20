@@ -1,4 +1,4 @@
-export default class VertexList {
+class VertexList {
   constructor () {
     this.head = null
     this.tail = null

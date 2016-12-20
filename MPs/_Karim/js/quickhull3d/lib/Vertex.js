@@ -1,4 +1,4 @@
-export default class Vertex {
+class Vertex {
   constructor (point, index) {
     this.point = point
     // index in the input array
