@@ -120,32 +120,33 @@
       var renderPasses = 0;
       var rttFramebuffer = new Array();
       var rttTexture = new Array();*/
-      var rttFramebuffer = new Array();
+      //var rttFramebuffer = new Array();
       var rttTexture = new Array();
+      var pixels = new Float32Array();//Pour pouvoir prendre les float de la texture.
 
-    /*  function initTextureFramebuffer(index) {
-      	rttFramebuffer[index] = glContext.createFramebuffer();
-        glContext.bindFramebuffer(glContext.FRAMEBUFFER, rttFramebuffer[index]);
-        rttFramebuffer[index].width = textureSize;
-        rttFramebuffer[index].height = textureSize;
-        rttTexture[index] = glContext.createTexture();
-        glContext.bindTexture(glContext.TEXTURE_2D, rttTexture[index]);
+      function initTextureFramebuffer(texture) {
+      	var fb = glContext.createFramebuffer();
+        glContext.bindFramebuffer(glContext.FRAMEBUFFER, fb);
+        fb.width = textureSize;
+        fb.height = textureSize;
+        //rttTexture[index] = glContext.createTexture();
+        glContext.bindTexture(glContext.TEXTURE_2D, texture);
         glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
 				glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.NEAREST);
-        glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, rttFramebuffer[index].width,
-        rttFramebuffer[index].height, 0, glContext.RGBA, glContext.UNSIGNED_BYTE, null);
+        glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, fb.width, fb.height, 0, glContext.RGBA, glContext.UNSIGNED_BYTE, null);
         var renderbuffer = glContext.createRenderbuffer();
         glContext.bindRenderbuffer(glContext.RENDERBUFFER, renderbuffer);
-        glContext.renderbufferStorage(glContext.RENDERBUFFER, glContext.DEPTH_COMPONENT16,
-        rttFramebuffer[index].width, rttFramebuffer[index].height);
-        glContext.framebufferTexture2D(glContext.FRAMEBUFFER, glContext.COLOR_ATTACHMENT0,
-        glContext.TEXTURE_2D, rttTexture[index], 0);
-        glContext.framebufferRenderbuffer(glContext.FRAMEBUFFER, glContext.DEPTH_ATTACHMENT,
-        glContext.RENDERBUFFER, renderbuffer);
+        glContext.renderbufferStorage(glContext.RENDERBUFFER, glContext.DEPTH_COMPONENT16, fb.width, fb.height);
+        glContext.framebufferTexture2D(glContext.FRAMEBUFFER, glContext.COLOR_ATTACHMENT0, glContext.TEXTURE_2D, texture, 0);
+        glContext.framebufferRenderbuffer(glContext.FRAMEBUFFER, glContext.DEPTH_ATTACHMENT, glContext.RENDERBUFFER, renderbuffer);
+
+        glContext.readPixels(10, 10, textureSize, textureSize, glContext.RGBA, glContext.FLOAT, pixels);//On lit les pixels
+
         glContext.bindTexture(glContext.TEXTURE_2D, null);
         glContext.bindRenderbuffer(glContext.RENDERBUFFER, null);
-        glContext.bindFramebuffer(glContext.FRAMEBUFFER, null);
-      }*/
+        glContext.bindFramebuffer(glContext.FRAMEBUFFER, null);//Unbind texture
+        console.log(pixels[0]);
+      }
 
     /*  var renderPasses = 0;
 
@@ -176,7 +177,6 @@
       function generateTextureWith2Darray(data, newTexture){
 				glContext.bindTexture(glContext.TEXTURE_2D, newTexture);
 				glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, glContext.RGBA, glContext.UNSIGNED_BYTE, data);//Censé prendre le canvas et le passer en texture
-        console.log(data);
 				glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
 				glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.NEAREST);
       }
@@ -210,19 +210,23 @@
 
       function createBaseTexture(textureSize, texturen){//Dessiner sur la canvas et le passer en texture Donc c'est là qu'il faudra venir avec les matrices
         var c = document.createElement("canvas");
+        //var c = document.getElementById("webgl-canvas");//Dans ce cas, le getContext est null, c'est dû au fait que le DOM n'est pas encore chargé quand
+        //j'exècute cette ligne. Je n'ai pas résolus le problème vu que ce n'est pas si important.
         c.width = textureSize;
         c.height = textureSize;
          var ctx = c.getContext("2d");
+         console.log(ctx);
          var red = 1;//C'est les couleures qui sont importantes
-         var green = 1;
-         var blue = 1;
+         var green = 0;
+         var blue = 0;
          ctx.fillStyle = "rgb(" + red + "," + green + "," + blue + ")";
          ctx.fillRect(10,10,textureSize,textureSize);//On s'en fout où est le rectangle
 
          var anz = texturen.length;
          texturen[anz] = glContext.createTexture();
          generateTextureWith2Darray(c, texturen[anz]);
-         console.log(texturen[anz]);
+         //console.log(texturen[anz]);
+         return texturen[anz];
       }
 
 
@@ -260,10 +264,10 @@
         initBuffers();
         console.log("initBuffers");
         //A voir si cette fonction est utile
-        createBaseTexture(textureSize, texColorTab);
-        console.log("createBaseTexture");
-        //initTextureFramebuffer(0);
-        //console.log("initTextureFramebuffer");
+        var texture = createBaseTexture(textureSize, texColorTab);
+        console.log("createBaseTexture "+texture);
+        initTextureFramebuffer(texture);
+        console.log("initTextureFramebuffer");
         //initTextureFramebuffer(1);
         renderLoop();
       }
