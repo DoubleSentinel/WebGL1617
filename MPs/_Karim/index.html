@@ -21,6 +21,7 @@
 		varying vec3 vVertexPosition;
         void main(void) {
 			vColor = aColor;
+			gl_PointSize = 10.0;
 			vVertexPosition = aVertexPosition;
 			gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
         }

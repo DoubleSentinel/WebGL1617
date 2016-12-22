@@ -1,27 +1,3 @@
-// import dot from 'gl-vec3/dot'
-
-// import add from 'gl-vec3/add'
-// import cross from 'gl-vec3/cross'
-// import copy from 'gl-vec3/copy'
-// import length from 'gl-vec3/length'
-// import scale from 'gl-vec3/scale'
-// import scaleAndAdd from 'gl-vec3/scaleAndAdd'
-// import normalize from 'gl-vec3/normalize'
-
-// import distance from 'gl-vec3/distance'
-// import squaredDistance from 'gl-vec3/squaredDistance'
-
-// var sub = require('gl-vec3/subtract')
-
-// var squaredLength = require('gl-vec3/squaredLength')
-
-
-// import pointLineDistance from 'point-line-distance'
-// import getPlaneNormal from 'get-plane-normal'
-/*****************************
-******* MEGA BRICOLAGE *******
-******************************/
-
 /*****************************
 ********** GL-VEC3 ***********
 ******************************/
@@ -91,7 +67,6 @@ function normalize(out, a) {
         z = a[2]
     var len = x*x + y*y + z*z
     if (len > 0) {
-        //TODO: evaluate use of glm_invsqrt here?
         len = 1 / Math.sqrt(len)
         out[0] = a[0] * len
         out[1] = a[1] * len
