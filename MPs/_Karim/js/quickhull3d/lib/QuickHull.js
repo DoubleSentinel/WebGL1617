@@ -44,7 +44,7 @@ class QuickHull {
     this.claimed = new VertexList()
     this.unclaimed = new VertexList()
 
-    // vertices of the hull(internal representation of points)
+    // verticesIceberg of the hull(internal representation of points)
     this.vertices = []
     for (let i = 0; i < points.length; i += 1) {
       this.vertices.push(new Vertex(points[i], i))
@@ -64,7 +64,7 @@ class QuickHull {
   }
 
   /**
-   * Removes `vertex` for the `claimed` list of vertices, it also makes sure
+   * Removes `vertex` for the `claimed` list of verticesIceberg, it also makes sure
    * that the link from `face` to the first vertex it sees in `claimed` is
    * linked correctly after the removal
    *
@@ -75,7 +75,7 @@ class QuickHull {
     if (vertex === face.outside) {
       // fix face.outside link
       if (vertex.next && vertex.next.face === face) {
-        // face has at least 2 outside vertices, move the `outside` reference
+        // face has at least 2 outside verticesIceberg, move the `outside` reference
         face.outside = vertex.next
       } else {
         // vertex was the only outside vertex that face had
@@ -86,11 +86,11 @@ class QuickHull {
   }
 
   /**
-   * Removes all the visible vertices that `face` is able to see which are
+   * Removes all the visible verticesIceberg that `face` is able to see which are
    * stored in the `claimed` vertext list
    *
    * @param {Face} face
-   * @return {Vertex|undefined} If face had visible vertices returns
+   * @return {Vertex|undefined} If face had visible verticesIceberg returns
    * `face.outside`, otherwise undefined
    */
   removeAllVerticesFromFace (face) {
@@ -116,13 +116,13 @@ class QuickHull {
   }
 
   /**
-   * Removes all the visible vertices that `face` is able to see, additionally
+   * Removes all the visible verticesIceberg that `face` is able to see, additionally
    * checking the following:
    *
-   * If `absorbingFace` doesn't exist then all the removed vertices will be
+   * If `absorbingFace` doesn't exist then all the removed verticesIceberg will be
    * added to the `unclaimed` vertex list
    *
-   * If `absorbingFace` exists then this method will assign all the vertices of
+   * If `absorbingFace` exists then this method will assign all the verticesIceberg of
    * `face` that can see `absorbingFace`, if a vertex cannot see `absorbingFace`
    * it's added to the `unclaimed` vertex list
    *
@@ -133,10 +133,10 @@ class QuickHull {
     const faceVertices = this.removeAllVerticesFromFace(face)
     if (faceVertices) {
       if (!absorbingFace) {
-        // mark the vertices to be reassigned to some other face
+        // mark the verticesIceberg to be reassigned to some other face
         this.unclaimed.addAll(faceVertices)
       } else {
-        // if there's an absorbing face try to assign as many vertices
+        // if there's an absorbing face try to assign as many verticesIceberg
         // as possible to it
 
         // the reference `vertex.next` might be destroyed on
@@ -159,7 +159,7 @@ class QuickHull {
   }
 
   /**
-   * Reassigns as many vertices as possible from the unclaimed list to the new
+   * Reassigns as many verticesIceberg as possible from the unclaimed list to the new
    * faces
    *
    * @param {Faces[]} newFaces
@@ -195,7 +195,7 @@ class QuickHull {
   /**
    * Computes the extremes of a tetrahedron which will be the initial hull
    *
-   * @return {number[]} The min/max vertices in the x,y,z directions
+   * @return {number[]} The min/max verticesIceberg in the x,y,z directions
    */
   computeExtremes () {
     const me = this
@@ -260,7 +260,7 @@ class QuickHull {
     let v0, v1, v2, v3
     let i, j
 
-    // Find the two vertices with the greatest 1d separation
+    // Find the two verticesIceberg with the greatest 1d separation
     // (max.x - min.x)
     // (max.y - min.y)
     // (max.z - min.z)
@@ -379,7 +379,7 @@ class QuickHull {
       this.faces.push(faces[i])
     }
 
-    // initial assignment of vertices to the faces of the tetrahedron
+    // initial assignment of verticesIceberg to the faces of the tetrahedron
     for (i = 0; i < vertices.length; i += 1) {
       const vertex = vertices[i]
       if (vertex !== v0 && vertex !== v1 && vertex !== v3 && vertex !== v3) {
@@ -436,12 +436,12 @@ class QuickHull {
    * Finds the next vertex to make faces with the current hull
    *
    * - let `face` be the first face existing in the `claimed` vertex list
-   *  - if `face` doesn't exist then return since there're no vertices left
+   *  - if `face` doesn't exist then return since there're no verticesIceberg left
    *  - otherwise for each `vertex` that face sees find the one furthest away
    *  from `face`
    *
    * @return {Vertex|undefined} Returns undefined when there're no more
-   * visible vertices
+   * visible verticesIceberg
    */
   nextVertexToAdd () {
     if (!this.claimed.isEmpty()) {
@@ -471,7 +471,7 @@ class QuickHull {
    * ccw order
    */
   computeHorizon (eyePoint, crossEdge, face, horizon) {
-    // moves face's vertices to the `unclaimed` vertex list
+    // moves face's verticesIceberg to the `unclaimed` vertex list
     this.deleteFaceVertices(face)
 
     face.mark = DELETED
@@ -679,7 +679,7 @@ class QuickHull {
         if (merge) {
           // debug.logger('face merge')
           // when two faces are merged it might be possible that redundant faces
-          // are destroyed, in that case move all the visible vertices from the
+          // are destroyed, in that case move all the visible verticesIceberg from the
           // destroyed faces to the `unclaimed` vertex list
           let discardedFaces = face.mergeAdjacentFaces(edge, [])
           for (let i = 0; i < discardedFaces.length; i += 1) {
@@ -703,14 +703,14 @@ class QuickHull {
    * - Compute the `horizon` which is a chain of half edges, for an edge to
    *   belong to this group it must be the edge connecting a face that can
    *   see `eyeVertex` and a face which cannot see `eyeVertex`
-   * - All the faces that can see `eyeVertex` have its visible vertices removed
+   * - All the faces that can see `eyeVertex` have its visible verticesIceberg removed
    *   from the claimed VertexList
    * - A new set of faces is created with each edge of the `horizon` and
    *   `eyeVertex`, each face is connected with the opposite horizon face and
    *   the face on the left/right
    * - The new faces are merged if possible with the opposite horizon face first
    *   and then the faces on the right/left
-   * - The vertices removed from all the visible faces are assigned to the new
+   * - The verticesIceberg removed from all the visible faces are assigned to the new
    *   faces if possible
    *
    * @param {Vertex} eyeVertex
@@ -756,7 +756,7 @@ class QuickHull {
     }
 
     // debug.logger('reassigning points to newFaces')
-    // reassign `unclaimed` vertices to the new faces
+    // reassign `unclaimed` verticesIceberg to the new faces
     this.resolveUnclaimedPoints(this.newFaces)
   }
 

@@ -97,7 +97,7 @@ function equalIndexes (t, f1, f2) {
     assert(f1tof2[i] >= 0)
     assert(typeof f1tof2[i] === 'number')
   }
-  t.equals(f1tof2.length, f2.length, 'hulls have the same indices')
+  t.equals(f1tof2.length, f2.length, 'hulls have the same indicesIceberg')
 }
 
 test('should have a valid constructor', function (t) {
@@ -171,7 +171,7 @@ test('should have a method which creates the instance/builds the hull', function
         assert(index >= 0 && index <= 3)
       })
     })
-  }, null, 'output has indices of points')
+  }, null, 'output has indicesIceberg of points')
   t.end()
 })
 

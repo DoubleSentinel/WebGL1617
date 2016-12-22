@@ -21,9 +21,9 @@ var vertexBuffer = null;
 var indexBuffer = null;
 var colorBuffer = null;
 
-var indices = [];
-var vertices = [];
-var colors = [];
+var indicesIceberg = [];
+var verticesIceberg = [];
+var colorsIceberg = [];
 
 var mvMatrix = mat4.create();
 var pMatrix = mat4.create();
@@ -65,8 +65,7 @@ function initShaderParameters(prg) {
 }
 
 function initBuffers() {
-    createBlockyBoundingBox(0, 0, 0, Math.random() * 10 + 10);
-    createBoundPointCloud(1);
+    createBlockyIceberg(0, 0, 0, Math.random() * 10 + 10, 20);
     vertexBufferOuterBoundingBox = getVertexBufferWithVertices(verticesOuterBoundingBox);
     colorBufferOuterBoundingBox = getVertexBufferWithVertices(colorsOuterBoundingBox);
     indexBufferBoundingBox = getIndexBufferWithIndices(indicesBoundingBox);
@@ -74,19 +73,19 @@ function initBuffers() {
     vertexBufferInnerBoundingBox = getVertexBufferWithVertices(verticesInnerBoundingBox);
     colorBufferInnerBoundingBox = getVertexBufferWithVertices(colorsInnerBoundingBox);
 
-    vertexBuffer = getVertexBufferWithVertices(vertices);
-    colorBuffer = getVertexBufferWithVertices(colors);
-    indexBuffer = getIndexBufferWithIndices(indices);
+    vertexBuffer = getVertexBufferWithVertices(verticesIceberg);
+    colorBuffer = getVertexBufferWithVertices(colorsIceberg);
+    indexBuffer = getIndexBufferWithIndices(indicesIceberg);
 }
 
-function createBlockyIceberg(x, y, z, height = Math.floor(Math.random() * 20) + 5) {
+function createBlockyIceberg(x, y, z, height = Math.floor(Math.random() * 20) + 5, numberOfPoints) {
     createBlockyBoundingBox(x, y, z, height);
-
+    createBoundPointCloud(numberOfPoints);
+    createIcebergHull();
 }
 
 function generateHullPoints(vertices) {
     var pointsToCreateHullOf = [];
-    // console.log(vertices.length);
     for (i = 0; i < vertices.length; i += 3) {
         pointsToCreateHullOf.push([vertices[i], vertices[i + 1], vertices[i + 2]])
     }
@@ -97,7 +96,7 @@ function generateHullPoints(vertices) {
 function generateHull(points) {
     var instance = new QuickHull(points);
     instance.build();
-    return instance.collectFaces(false);
+    return instance.collectFaces(true);
 }
 
 function add3D(v, u) {
@@ -111,77 +110,75 @@ function scalar3D(a, v) {
 }
 
 function trianglePointPick(v1, v2, v3, a, b) {
-    //finding point in a  triangle with vertices v1,v2,v3:
+    //finding point in a  triangle with verticesIceberg v1,v2,v3:
     // _   _      _    _       _    _
     // x = v1 + a(v2 - v1) + b(v3 - v1)
-    // console.log(v1,v2,v3);
-    // var B = scalar3D(b,sub3D(v3,v1));
-    // console.log(sub3D(v3,v1));
-    // var A = scalar3D(a,sub3D(v2,v1));
-    // console.log(A);
-    // var C = add3D(B,A);
-    // console.log(C);
-    // var out = add3D(v1,C);
-    // console.log(out);
-    // return out;
     return add3D(v1, add3D(scalar3D(a, sub3D(v2, v1)), scalar3D(b, sub3D(v3, v1))));
 }
 
 function generateBoundRandomPoint(innerTriangle, outerTriangle) {
     var a = Math.random();
-    var b = Math.random();
+    var b = (1-a)*Math.random();
     var innerPoint = trianglePointPick(innerTriangle[0], innerTriangle[1], innerTriangle[2], a, b);
     var outerPoint = trianglePointPick(outerTriangle[0], outerTriangle[1], outerTriangle[2], a, b);
-    return add3D(innerPoint, scalar3D(0, sub3D(outerPoint, innerPoint)));
+    return add3D(outerPoint, scalar3D(Math.random(), sub3D(innerPoint, outerPoint)));
+}
+
+function createIcebergHull(){
+    var outerHullPoints = generateHullPoints(verticesIceberg);
+    var iceBergHull = generateHull(outerHullPoints);
+    for (i = 0; i < iceBergHull.length; i++) {
+        indicesIceberg.push(iceBergHull[i][0], iceBergHull[i][1], iceBergHull[i][2]);
+    }
 }
 
 function createBoundPointCloud(numberOfPoints) {
-    // var cloud = []
-    vertices = [];
-    indices = [];
-    colors = [];
+    verticesIceberg = [];
+    indicesIceberg = [];
+    colorsIceberg = [];
     var temp;
-    for (j = 0; j < indicesBoundingBox.length; j++) {
-        var i = j*3;
-        //mpodify this to take correct faces and do as many points as number of points
-        temp = (generateBoundRandomPoint([
-                                                [
-                                                    verticesInnerBoundingBox[indicesBoundingBox[i]],
-                                                    verticesInnerBoundingBox[indicesBoundingBox[i]+1],
-                                                    verticesInnerBoundingBox[indicesBoundingBox[i]+2]
-                                                ],
-                                                [
-                                                    verticesInnerBoundingBox[indicesBoundingBox[i+1]],
-                                                    verticesInnerBoundingBox[indicesBoundingBox[i+1]+1],
-                                                    verticesInnerBoundingBox[indicesBoundingBox[i+1]+2]
-                                                ],
-                                                [
-                                                    verticesInnerBoundingBox[indicesBoundingBox[i+2]],
-                                                    verticesInnerBoundingBox[indicesBoundingBox[i+2]+1],
-                                                    verticesInnerBoundingBox[indicesBoundingBox[i+2]+2]
-                                                ],
-                                            ],
-                                            [
-                                                [
-                                                    verticesOuterBoundingBox[indicesBoundingBox[i]],
-                                                    verticesOuterBoundingBox[indicesBoundingBox[i]+1],
-                                                    verticesOuterBoundingBox[indicesBoundingBox[i]+2]
-                                                ],
-                                                [
-                                                    verticesOuterBoundingBox[indicesBoundingBox[i+1]],
-                                                    verticesOuterBoundingBox[indicesBoundingBox[i+1]+1],
-                                                    verticesOuterBoundingBox[indicesBoundingBox[i+1]+2]
-                                                ],
-                                                [
-                                                    verticesOuterBoundingBox[indicesBoundingBox[i+2]],
-                                                    verticesOuterBoundingBox[indicesBoundingBox[i+2]+1],
-                                                    verticesOuterBoundingBox[indicesBoundingBox[i+2]+2]
-                                                ],
-                                            ]));
-        vertices.push(temp[0],temp[1],temp[2]);
-        indices.push(indices.length);
-        colors.push(0.0,0.0,1.0,1.0);
+    //for each triangle of the bounding box
+    for (i = 0; i < indicesBoundingBox.length; i+=3) {
+        for(j=0;j<numberOfPoints;j++) {
+            temp = (generateBoundRandomPoint([
+                    [
+                        verticesInnerBoundingBox[indicesBoundingBox[i] * 3],
+                        verticesInnerBoundingBox[indicesBoundingBox[i] * 3 + 1],
+                        verticesInnerBoundingBox[indicesBoundingBox[i] * 3 + 2]
+                    ],
+                    [
+                        verticesInnerBoundingBox[indicesBoundingBox[i + 1] * 3],
+                        verticesInnerBoundingBox[indicesBoundingBox[i + 1] * 3 + 1],
+                        verticesInnerBoundingBox[indicesBoundingBox[i + 1] * 3 + 2]
+                    ],
+                    [
+                        verticesInnerBoundingBox[indicesBoundingBox[i + 2] * 3],
+                        verticesInnerBoundingBox[indicesBoundingBox[i + 2] * 3 + 1],
+                        verticesInnerBoundingBox[indicesBoundingBox[i + 2] * 3 + 2]
+                    ],
+                ],
+                [
+                    [
+                        verticesOuterBoundingBox[indicesBoundingBox[i] * 3],
+                        verticesOuterBoundingBox[indicesBoundingBox[i] * 3 + 1],
+                        verticesOuterBoundingBox[indicesBoundingBox[i] * 3 + 2]
+                    ],
+                    [
+                        verticesOuterBoundingBox[indicesBoundingBox[i + 1] * 3],
+                        verticesOuterBoundingBox[indicesBoundingBox[i + 1] * 3 + 1],
+                        verticesOuterBoundingBox[indicesBoundingBox[i + 1] * 3 + 2]
+                    ],
+                    [
+                        verticesOuterBoundingBox[indicesBoundingBox[i + 2] * 3],
+                        verticesOuterBoundingBox[indicesBoundingBox[i + 2] * 3 + 1],
+                        verticesOuterBoundingBox[indicesBoundingBox[i + 2] * 3 + 2]
+                    ],
+                ]));
+            verticesIceberg.push(temp[0], temp[1], temp[2]);
+            colorsIceberg.push(Math.random(), Math.random(), Math.random(), 0.5);
+        }
     }
+
 }
 
 function createBlockyBoundingBox(x, y, z, height) {
@@ -215,8 +212,8 @@ function createBlockyBoundingBox(x, y, z, height) {
     var dimensionIntermediatePlane = dimensionWaterPlane * ((1.8 - 0.9) * Math.random() + 0.9);
     var dimensionBottomPlane = dimensionTopPlane * ((0.9 - 0.6) * Math.random() + 0.6);
 
-    //setting procedural jaggedness {20 - 40}%
-    var boundingBoxThickness = ((0.80 - 0.6) * Math.random() + 0.6);
+    //setting procedural jaggedness {20 - 60}%
+    var boundingBoxThickness = ((0.80 - 0.4) * Math.random() + 0.4);
 
     //now generating points for each plane
     //outer top plane
@@ -230,12 +227,12 @@ function createBlockyBoundingBox(x, y, z, height) {
     verticesInnerBoundingBox.push((x - dimensionTopPlane) * boundingBoxThickness, (y + dimensionTopPlane) * boundingBoxThickness, (z + d1) * boundingBoxThickness);
     verticesInnerBoundingBox.push((x + dimensionTopPlane) * boundingBoxThickness, (y - dimensionTopPlane) * boundingBoxThickness, (z + d1) * boundingBoxThickness);//3
 
-    //top outer plane colors
+    //top outer plane colorsIceberg
     colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
     colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
     colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
     colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    //top inner plane colors
+    //top inner plane colorsIceberg
     colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
     colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
     colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
@@ -252,12 +249,12 @@ function createBlockyBoundingBox(x, y, z, height) {
     verticesInnerBoundingBox.push((x - dimensionWaterPlane) * boundingBoxThickness, (y + dimensionWaterPlane) * boundingBoxThickness, z);
     verticesInnerBoundingBox.push((x + dimensionWaterPlane) * boundingBoxThickness, (y - dimensionWaterPlane) * boundingBoxThickness, z);//3
 
-    //outer water plane colors
+    //outer water plane colorsIceberg
     colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
     colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
     colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
     colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    //inner water plane colors
+    //inner water plane colorsIceberg
     colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
     colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
     colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
@@ -274,12 +271,12 @@ function createBlockyBoundingBox(x, y, z, height) {
     verticesInnerBoundingBox.push((x - dimensionIntermediatePlane) * boundingBoxThickness, (y + dimensionIntermediatePlane) * boundingBoxThickness, (z - h1) * boundingBoxThickness);
     verticesInnerBoundingBox.push((x + dimensionIntermediatePlane) * boundingBoxThickness, (y - dimensionIntermediatePlane) * boundingBoxThickness, (z - h1) * boundingBoxThickness);//11
 
-    //outer intermediate plane colors
+    //outer intermediate plane colorsIceberg
     colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
     colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
     colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
     colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    //inner intermediate plane colors
+    //inner intermediate plane colorsIceberg
     colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
     colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
     colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
@@ -296,12 +293,12 @@ function createBlockyBoundingBox(x, y, z, height) {
     verticesInnerBoundingBox.push((x - dimensionBottomPlane) * boundingBoxThickness, (y + dimensionBottomPlane) * boundingBoxThickness, (z - H) - (z - H) * (0.9 - boundingBoxThickness));
     verticesInnerBoundingBox.push((x + dimensionBottomPlane) * boundingBoxThickness, (y - dimensionBottomPlane) * boundingBoxThickness, (z - H) - (z - H) * (0.9 - boundingBoxThickness));//11
 
-    //outer bottom plane colors
+    //outer bottom plane colorsIceberg
     colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
     colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
     colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
     colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    //inner bottom plane colors
+    //inner bottom plane colorsIceberg
     colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
     colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
     colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
@@ -310,24 +307,46 @@ function createBlockyBoundingBox(x, y, z, height) {
     // var outerHullPoints = generateHullPoints(verticesOuterBoundingBox);
     // var outerhull = generateHull(outerHullPoints);
     // for (i = 0; i < outerhull.length; i++) {
-    //     colors.push(Math.random(), Math.random(), Math.random(), 0.5);
+    //     colorsIceberg.push(Math.random(), Math.random(), Math.random(), 0.5);
     //     indicesBoundingBox.push(outerhull[i][0], outerhull[i][1], outerhull[i][2]);
     // }
+    //pushing all triangles of the different faces
     indicesBoundingBox.push(
-        0,1,2,
-        0,3,1,
-        5,6,4,
-        4,7,5,
-        9,10,8,
-        8,11,9,
-        13,14,12,
-        12,15,13
+        0,4,6, //1
+        0,2,6,
+        0,2,1, //3
+        5,6,1,
+        2,6,1, //5
+        3,0,1,
+        3,5,1, //7
+        3,7,5,
+        3,7,4, //9
+        3,0,4,
+        8,7,4, //11
+        8,11,7,
+        8,10,4, //13
+        10,6,4,
+        10,9,6, //15
+        9,5,6,
+        9,11,7, //17
+        9,5,7,
+        9,11,13, //19
+        15,11,13,
+        14,9,13, //21
+        14,10,9,
+        14,13,12, //23
+        14,10,12,
+        8,12,15, //25
+        8,11,15,
+        8,12,10,
+        12,13,15, //27
+        12,14,13
     )
 }
 
 function drawScene() {
     glContext.clearColor(0.1, 0.1, 0.1, 1.0);
-    glContext.disable(glContext.DEPTH_TEST);
+    glContext.enable(glContext.DEPTH_TEST);
     glContext.disable(glContext.BLEND);
     glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
     glContext.viewport(0, 0, c_width, c_height);
@@ -372,7 +391,7 @@ function drawScene() {
     glContext.vertexAttribPointer(prg.colorAttribute, 4, glContext.FLOAT, false, 0, 0);
 
     glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    glContext.drawElements(glContext.POINTS, indices.length, glContext.UNSIGNED_SHORT, 0);
+    glContext.drawElements(glContext.TRIANGLES, indicesIceberg.length, glContext.UNSIGNED_SHORT, 0);
 }
 
 function initWebGL() {
