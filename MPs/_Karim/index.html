@@ -40,7 +40,8 @@
 		}
         
     </script>
-    <script src="js/my_classes/procedural_iceberg.js"></script>
+    <script src="js/my_classes/blockyIceberg.js"></script>
+    <script src="js/my_classes/math.js"></script>
     <script src="js/quickhull3d/lib/QuickHull.js"></script>
     <script src="js/quickhull3d/lib/Face.js"></script>
     <script src="js/quickhull3d/lib/HalfEdge.js"></script>
@@ -48,7 +49,8 @@
     <script src="js/quickhull3d/lib/Vertex.js"></script>
     <script src="js/quickhull3d/lib/dependencies.js"></script>
     <script src="js/quickhull3d/lib/VertexList.js"></script>
-    <script src="js/node_modules/alpha-shape/alphaShape.js"></script>
+    <script src="js/alpha-shape/alphaShape.js"></script>
+    <script src="js/my_classes/procedural_iceberg.js"></script>
 
 </head>
 <body onload="initWebGL()">
@@ -58,6 +60,11 @@
 </canvas>
 <button id="generate" onclick="initBuffers()">Generate</button>
 <label>Show bounding box wireframe:</label><input type="checkbox" onchange="ViewWireframe()" checked="checked">
+<label>Choose hull algorithm:</label>
+<select id="algorithm" onchange="AlgorithmSelector(this.value)">
+    <option value="convex">Convex Hull</option>
+    <option value="alpha">Alpha Shape</option>
+</select>
 <script src="tools/mouseMotionHandling.js"></script>
 </body>
 

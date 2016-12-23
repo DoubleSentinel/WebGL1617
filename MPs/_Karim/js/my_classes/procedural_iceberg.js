@@ -2,8 +2,6 @@
  * Created by karim on 03.10.2016.
  */
 
-
-
 var vertexBufferOuterBoundingBox = null;
 var colorBufferOuterBoundingBox = null;
 
@@ -31,12 +29,7 @@ var mvMatrix = mat4.create();
 var pMatrix = mat4.create();
 var translateZ = -10;
 var wireframe = true;
-
-var el = document.getElementById("clickMe");
-if (el)
-    el.addEventListener("click", initBuffers, false);
-else if (el)
-    el.attachEvent('onclick', initBuffers);
+var algorithm = 'convex';
 
 window.onload = displayTitle("Procedural IceBergs");
 window.onkeydown = function (e) {
@@ -53,6 +46,10 @@ window.onkeydown = function (e) {
 
 function ViewWireframe() {
     wireframe = !wireframe;
+}
+
+function AlgorithmSelector(name){
+    algorithm = name;
 }
 
 function initCamera() {
@@ -86,11 +83,7 @@ function initBuffers() {
     indexBuffer = getIndexBufferWithIndices(indicesIceberg);
 }
 
-function createBlockyIceberg(x, y, z, height = Math.floor(Math.random() * 20) + 5, numberOfPoints) {
-    createBlockyBoundingBox(x, y, z, height);
-    createBoundPointCloud(numberOfPoints);
-    createIcebergHull();
-}
+
 
 function generateHullPoints(vertices) {
     var pointsToCreateHullOf = [];
@@ -107,36 +100,30 @@ function generateHull(points) {
     return instance.collectFaces(true);
 }
 
-function add3D(v, u) {
-    return [v[0] + u[0], v[1] + u[1], v[2] + u[2]];
-}
-function sub3D(v, u) {
-    return [v[0] - u[0], v[1] - u[1], v[2] - u[2]];
-}
-function scalar3D(a, v) {
-    return [a * v[0], a * v[1], a * v[2]];
-}
 
-function trianglePointPick(v1, v2, v3, a, b) {
-    //finding point in a  triangle with verticesIceberg v1,v2,v3:
-    // _   _      _    _       _    _
-    // x = v1 + a(v2 - v1) + b(v3 - v1)
-    return add3D(v1, add3D(scalar3D(a, sub3D(v2, v1)), scalar3D(b, sub3D(v3, v1))));
-}
 
 function generateBoundRandomPoint(innerTriangle, outerTriangle) {
-    var a = (0.7-0.4)*Math.random()+0.4;
-    var b = (1-a)*Math.random();
+    var a = (0.7 - 0.4) * Math.random() + 0.4;
+    var b = (1 - a) * Math.random();
     var innerPoint = trianglePointPick(innerTriangle[0], innerTriangle[1], innerTriangle[2], a, b);
     var outerPoint = trianglePointPick(outerTriangle[0], outerTriangle[1], outerTriangle[2], a, b);
     return add3D(outerPoint, scalar3D(Math.random(), sub3D(innerPoint, outerPoint)));
 }
 
-function createIcebergHull(){
-    var outerHullPoints = generateHullPoints(verticesIceberg);
-    var iceBergHull = generateHull(outerHullPoints);
-    for (i = 0; i < iceBergHull.length; i++) {
-        indicesIceberg.push(iceBergHull[i][0], iceBergHull[i][1], iceBergHull[i][2]);
+function createIcebergHull() {
+    var hullPoints = generateHullPoints(verticesIceberg);
+    var iceBergHull;
+    if (algorithm == 'alpha') {
+        iceBergHull = alphaShape(0.1, hullPoints);
+        console.log(iceBergHull);
+        for (i = 0; i < iceBergHull.length; i++) {
+            indicesIceberg.push(iceBergHull[i][0], iceBergHull[i][1], iceBergHull[i][2]);
+        }
+    } else if (algorithm == 'convex') {
+        iceBergHull = generateHull(hullPoints);
+        for (i = 0; i < iceBergHull.length; i++) {
+            indicesIceberg.push(iceBergHull[i][0], iceBergHull[i][1], iceBergHull[i][2]);
+        }
     }
 }
 
@@ -146,8 +133,8 @@ function createBoundPointCloud(numberOfPoints) {
     colorsIceberg = [];
     var temp;
     //for each triangle of the bounding box
-    for (i = 0; i < indicesBoundingBox.length; i+=3) {
-        for(j=0;j<numberOfPoints;j++) {
+    for (i = 0; i < indicesBoundingBox.length; i += 3) {
+        for (j = 0; j < numberOfPoints; j++) {
             temp = (generateBoundRandomPoint([
                     [
                         verticesInnerBoundingBox[indicesBoundingBox[i] * 3],
@@ -187,169 +174,6 @@ function createBoundPointCloud(numberOfPoints) {
         }
     }
 
-}
-
-function createBlockyBoundingBox(x, y, z, height) {
-    /* To setup procedurally generated blocky-type iceberg, we have to set procedural rules
-     * the first one is determining how many sections to the binding box we want to have, this can be parametered/randomized
-     * in later development. For now, it is being set as 3 sections, divided by 4 limiting points.
-     *                _-first plane = (x,y,waterlevel[2]+height)
-     *  d1 = D(0.1) -|_
-     *                _-second plane = water level = (x,y,z)
-     *  h1 ----------|_
-     *  H  = D(0.9)    -third plane === {H(0.5),H(0.9)} <- at random
-     *  h2 -----------|
-     *                 -fourth plane = H - h1*/
-    //resetting tabs
-    verticesOuterBoundingBox = [];
-    indicesBoundingBox = [];
-    colorsOuterBoundingBox = [];
-
-    verticesInnerBoundingBox = [];
-    colorsInnerBoundingBox = [];
-
-    //setting procedural heights
-    var d1 = height;
-    var D = d1 * 10;
-    var H = D * 0.9;
-    var h1 = H * ((0.9 - 0.5) * Math.random() + 0.5);
-
-    //now setting procedural rules for quad binding boxes dimensions
-    var dimensionTopPlane = (height * ((0.95-0.75)* Math.random()+0.75)) / 2;
-    var dimensionWaterPlane = dimensionTopPlane * ((4.9 - 1.1) * Math.random() + 1.1);
-    var dimensionIntermediatePlane = dimensionWaterPlane * ((1.8 - 0.9) * Math.random() + 0.9);
-    var dimensionBottomPlane = dimensionIntermediatePlane * ((0.9 - 0.6) * Math.random() + 0.6);
-
-    //setting procedural jaggedness {40 - 60}%
-    var boundingBoxThickness = ((0.60 - 0.4) * Math.random() + 0.4);
-
-    //now generating points for each plane
-    //outer top plane
-    verticesOuterBoundingBox.push(x + dimensionTopPlane, y + dimensionTopPlane, z + d1);
-    verticesOuterBoundingBox.push(x - dimensionTopPlane, y - dimensionTopPlane, z + d1);
-    verticesOuterBoundingBox.push(x - dimensionTopPlane, y + dimensionTopPlane, z + d1);
-    verticesOuterBoundingBox.push(x + dimensionTopPlane, y - dimensionTopPlane, z + d1);//3
-    //inner top plane
-    verticesInnerBoundingBox.push((x + dimensionTopPlane) * boundingBoxThickness, (y + dimensionTopPlane) * boundingBoxThickness, (z + d1) * boundingBoxThickness);
-    verticesInnerBoundingBox.push((x - dimensionTopPlane) * boundingBoxThickness, (y - dimensionTopPlane) * boundingBoxThickness, (z + d1) * boundingBoxThickness);
-    verticesInnerBoundingBox.push((x - dimensionTopPlane) * boundingBoxThickness, (y + dimensionTopPlane) * boundingBoxThickness, (z + d1) * boundingBoxThickness);
-    verticesInnerBoundingBox.push((x + dimensionTopPlane) * boundingBoxThickness, (y - dimensionTopPlane) * boundingBoxThickness, (z + d1) * boundingBoxThickness);//3
-
-    //top outer plane colorsIceberg
-    colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    //top inner plane colorsIceberg
-    colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
-    colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
-    colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
-    colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
-
-    //outer water level
-    verticesOuterBoundingBox.push(x + dimensionWaterPlane, y + dimensionWaterPlane, z);
-    verticesOuterBoundingBox.push(x - dimensionWaterPlane, y - dimensionWaterPlane, z);
-    verticesOuterBoundingBox.push(x - dimensionWaterPlane, y + dimensionWaterPlane, z);
-    verticesOuterBoundingBox.push(x + dimensionWaterPlane, y - dimensionWaterPlane, z);//7
-    //inner water level
-    verticesInnerBoundingBox.push((x + dimensionWaterPlane) * boundingBoxThickness, (y + dimensionWaterPlane) * boundingBoxThickness, z);
-    verticesInnerBoundingBox.push((x - dimensionWaterPlane) * boundingBoxThickness, (y - dimensionWaterPlane) * boundingBoxThickness, z);
-    verticesInnerBoundingBox.push((x - dimensionWaterPlane) * boundingBoxThickness, (y + dimensionWaterPlane) * boundingBoxThickness, z);
-    verticesInnerBoundingBox.push((x + dimensionWaterPlane) * boundingBoxThickness, (y - dimensionWaterPlane) * boundingBoxThickness, z);//3
-
-    //outer water plane colorsIceberg
-    colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    //inner water plane colorsIceberg
-    colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
-    colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
-    colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
-    colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
-
-    //outer intermediate level
-    verticesOuterBoundingBox.push(x + dimensionIntermediatePlane, y + dimensionIntermediatePlane, z - h1);
-    verticesOuterBoundingBox.push(x - dimensionIntermediatePlane, y - dimensionIntermediatePlane, z - h1);
-    verticesOuterBoundingBox.push(x - dimensionIntermediatePlane, y + dimensionIntermediatePlane, z - h1);
-    verticesOuterBoundingBox.push(x + dimensionIntermediatePlane, y - dimensionIntermediatePlane, z - h1);//11
-    //inner intermediate level
-    verticesInnerBoundingBox.push((x + dimensionIntermediatePlane) * boundingBoxThickness, (y + dimensionIntermediatePlane) * boundingBoxThickness, (z - h1) * boundingBoxThickness);
-    verticesInnerBoundingBox.push((x - dimensionIntermediatePlane) * boundingBoxThickness, (y - dimensionIntermediatePlane) * boundingBoxThickness, (z - h1) * boundingBoxThickness);
-    verticesInnerBoundingBox.push((x - dimensionIntermediatePlane) * boundingBoxThickness, (y + dimensionIntermediatePlane) * boundingBoxThickness, (z - h1) * boundingBoxThickness);
-    verticesInnerBoundingBox.push((x + dimensionIntermediatePlane) * boundingBoxThickness, (y - dimensionIntermediatePlane) * boundingBoxThickness, (z - h1) * boundingBoxThickness);//11
-
-    //outer intermediate plane colorsIceberg
-    colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    //inner intermediate plane colorsIceberg
-    colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
-    colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
-    colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
-    colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
-
-    //outer bottom level
-    verticesOuterBoundingBox.push(x + dimensionBottomPlane, y + dimensionBottomPlane, z - H);
-    verticesOuterBoundingBox.push(x - dimensionBottomPlane, y - dimensionBottomPlane, z - H);
-    verticesOuterBoundingBox.push(x - dimensionBottomPlane, y + dimensionBottomPlane, z - H);
-    verticesOuterBoundingBox.push(x + dimensionBottomPlane, y - dimensionBottomPlane, z - H);//15
-    //inner bottom level
-    verticesInnerBoundingBox.push((x + dimensionBottomPlane) * boundingBoxThickness, (y + dimensionBottomPlane) * boundingBoxThickness, (z - H) - (z - H) * (0.9 - boundingBoxThickness));
-    verticesInnerBoundingBox.push((x - dimensionBottomPlane) * boundingBoxThickness, (y - dimensionBottomPlane) * boundingBoxThickness, (z - H) - (z - H) * (0.9 - boundingBoxThickness));
-    verticesInnerBoundingBox.push((x - dimensionBottomPlane) * boundingBoxThickness, (y + dimensionBottomPlane) * boundingBoxThickness, (z - H) - (z - H) * (0.9 - boundingBoxThickness));
-    verticesInnerBoundingBox.push((x + dimensionBottomPlane) * boundingBoxThickness, (y - dimensionBottomPlane) * boundingBoxThickness, (z - H) - (z - H) * (0.9 - boundingBoxThickness));//11
-
-    //outer bottom plane colorsIceberg
-    colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
-    //inner bottom plane colorsIceberg
-    colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
-    colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
-    colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
-    colorsInnerBoundingBox.push(0.0, 1.0, 0.0, 1.0);
-
-    // var outerHullPoints = generateHullPoints(verticesOuterBoundingBox);
-    // var outerhull = generateHull(outerHullPoints);
-    // for (i = 0; i < outerhull.length; i++) {
-    //     colorsIceberg.push(Math.random(), Math.random(), Math.random(), 0.5);
-    //     indicesBoundingBox.push(outerhull[i][0], outerhull[i][1], outerhull[i][2]);
-    // }
-    //pushing all triangles of the different faces
-    indicesBoundingBox.push(
-        0,4,6, //1
-        0,2,6,
-        0,2,1, //3
-        5,6,1,
-        2,6,1, //5
-        3,0,1,
-        3,5,1, //7
-        3,7,5,
-        3,7,4, //9
-        3,0,4,
-        8,7,4, //11
-        8,11,7,
-        8,10,4, //13
-        10,6,4,
-        10,9,6, //15
-        9,5,6,
-        9,11,7, //17
-        9,5,7,
-        9,11,13, //19
-        15,11,13,
-        14,9,13, //21
-        14,10,9,
-        14,13,12, //23
-        14,10,12,
-        8,12,15, //25
-        8,11,15,
-        8,12,10,
-        12,13,15, //27
-        12,14,13
-    )
 }
 
 function drawScene() {
