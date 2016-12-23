@@ -2,6 +2,8 @@
  * Created by karim on 03.10.2016.
  */
 
+
+
 var vertexBufferOuterBoundingBox = null;
 var colorBufferOuterBoundingBox = null;
 
@@ -29,6 +31,12 @@ var mvMatrix = mat4.create();
 var pMatrix = mat4.create();
 var translateZ = -10;
 var wireframe = true;
+
+var el = document.getElementById("clickMe");
+if (el)
+    el.addEventListener("click", initBuffers, false);
+else if (el)
+    el.attachEvent('onclick', initBuffers);
 
 window.onload = displayTitle("Procedural IceBergs");
 window.onkeydown = function (e) {
@@ -117,7 +125,7 @@ function trianglePointPick(v1, v2, v3, a, b) {
 }
 
 function generateBoundRandomPoint(innerTriangle, outerTriangle) {
-    var a = Math.random();
+    var a = (0.7-0.4)*Math.random()+0.4;
     var b = (1-a)*Math.random();
     var innerPoint = trianglePointPick(innerTriangle[0], innerTriangle[1], innerTriangle[2], a, b);
     var outerPoint = trianglePointPick(outerTriangle[0], outerTriangle[1], outerTriangle[2], a, b);
@@ -207,13 +215,13 @@ function createBlockyBoundingBox(x, y, z, height) {
     var h1 = H * ((0.9 - 0.5) * Math.random() + 0.5);
 
     //now setting procedural rules for quad binding boxes dimensions
-    var dimensionTopPlane = (height * (0.7 * Math.random() + 2)) / 2;
-    var dimensionWaterPlane = dimensionTopPlane * ((2.9 - 1.1) * Math.random() + 1.1);
+    var dimensionTopPlane = (height * ((0.95-0.75)* Math.random()+0.75)) / 2;
+    var dimensionWaterPlane = dimensionTopPlane * ((4.9 - 1.1) * Math.random() + 1.1);
     var dimensionIntermediatePlane = dimensionWaterPlane * ((1.8 - 0.9) * Math.random() + 0.9);
-    var dimensionBottomPlane = dimensionTopPlane * ((0.9 - 0.6) * Math.random() + 0.6);
+    var dimensionBottomPlane = dimensionIntermediatePlane * ((0.9 - 0.6) * Math.random() + 0.6);
 
-    //setting procedural jaggedness {20 - 60}%
-    var boundingBoxThickness = ((0.80 - 0.4) * Math.random() + 0.4);
+    //setting procedural jaggedness {40 - 60}%
+    var boundingBoxThickness = ((0.60 - 0.4) * Math.random() + 0.4);
 
     //now generating points for each plane
     //outer top plane

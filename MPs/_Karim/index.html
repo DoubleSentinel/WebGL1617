@@ -16,7 +16,6 @@
         attribute vec4 aColor;
         uniform mat4 uMVMatrix;
         uniform mat4 uPMatrix;
-		varying vec2 vSquares;
 		varying vec4 vColor;
 		varying vec3 vVertexPosition;
         void main(void) {
@@ -49,6 +48,7 @@
     <script src="js/quickhull3d/lib/Vertex.js"></script>
     <script src="js/quickhull3d/lib/dependencies.js"></script>
     <script src="js/quickhull3d/lib/VertexList.js"></script>
+    <script src="js/node_modules/alpha-shape/alphaShape.js"></script>
 
 </head>
 <body onload="initWebGL()">
@@ -56,7 +56,7 @@
 <canvas id="webgl-canvas" width="750" height="750">
     HTML5 is not supported
 </canvas>
-<button onclick="initBuffers()">Generate</button>
+<button id="generate" onclick="initBuffers()">Generate</button>
 <label>Show bounding box wireframe:</label><input type="checkbox" onchange="ViewWireframe()" checked="checked">
 <script src="tools/mouseMotionHandling.js"></script>
 </body>
