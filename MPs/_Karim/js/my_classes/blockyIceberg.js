@@ -34,9 +34,9 @@ function createBlockyBoundingBox(x, y, z, height) {
     var h1 = H * ((0.9 - 0.5) * Math.random() + 0.5);
 
     //now setting procedural rules for quad binding boxes dimensions
-    var dimensionTopPlane = (height * ((0.95 - 0.75) * Math.random() + 0.75)) / 2;
-    var dimensionWaterPlane = dimensionTopPlane * ((4.9 - 1.1) * Math.random() + 1.1);
-    var dimensionIntermediatePlane = dimensionWaterPlane * ((1.8 - 0.9) * Math.random() + 0.9);
+    var dimensionTopPlane = (height * ((0.9 - 0.8) * Math.random() +0.8)) / 2;
+    var dimensionWaterPlane = dimensionTopPlane * ((2.5 - 1.1) * Math.random() + 1.1);
+    var dimensionIntermediatePlane = dimensionWaterPlane * ((2.5 - 1.1) * Math.random() + 1.1);
     var dimensionBottomPlane = dimensionIntermediatePlane * ((0.9 - 0.6) * Math.random() + 0.6);
 
     //setting procedural jaggedness {40 - 60}%
@@ -163,10 +163,9 @@ function createBlockyBoundingBox(x, y, z, height) {
         14, 10, 9,
         14, 13, 12, //23
         14, 10, 12,
-        8, 12, 15, //25
+        8, 15, 12, //25
         8, 11, 15,
-        8, 12, 10,
-        12, 13, 15, //27
-        12, 14, 13
+        8, 12, 10, //27
+        12, 13, 15
     )
 }

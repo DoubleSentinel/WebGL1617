@@ -28,7 +28,8 @@ var colorsIceberg = [];
 var mvMatrix = mat4.create();
 var pMatrix = mat4.create();
 var translateZ = -10;
-var wireframe = true;
+var wireframe = false;
+var water = true;
 var algorithm = 'convex';
 
 window.onload = displayTitle("Procedural IceBergs");
@@ -48,13 +49,17 @@ function ViewWireframe() {
     wireframe = !wireframe;
 }
 
+function ViewWater() {
+    water = !water;
+}
+
 function AlgorithmSelector(name){
     algorithm = name;
 }
 
 function initCamera() {
     mat4.identity(mvMatrix);
-    mat4.perspective(pMatrix, 45.0, c_width / c_height, 0.1, 10000.0);
+    mat4.perspective(pMatrix, 45.0, c_width / c_height, 0.1, 1000.0);
 }
 
 function initShaderParameters(prg) {
@@ -70,7 +75,8 @@ function initShaderParameters(prg) {
 }
 
 function initBuffers() {
-    createBlockyIceberg(0, 0, 0, Math.random() * 10 + 10, 20);
+    createBlockyIceberg(0, 0, 0, Math.random() * 10 + 10, 50);
+    createWater();
     vertexBufferOuterBoundingBox = getVertexBufferWithVertices(verticesOuterBoundingBox);
     colorBufferOuterBoundingBox = getVertexBufferWithVertices(colorsOuterBoundingBox);
     indexBufferBoundingBox = getIndexBufferWithIndices(indicesBoundingBox);
@@ -81,9 +87,9 @@ function initBuffers() {
     vertexBuffer = getVertexBufferWithVertices(verticesIceberg);
     colorBuffer = getVertexBufferWithVertices(colorsIceberg);
     indexBuffer = getIndexBufferWithIndices(indicesIceberg);
+
+    initWaterBuffers();
 }
-
-
 
 function generateHullPoints(vertices) {
     var pointsToCreateHullOf = [];
@@ -100,10 +106,8 @@ function generateHull(points) {
     return instance.collectFaces(true);
 }
 
-
-
 function generateBoundRandomPoint(innerTriangle, outerTriangle) {
-    var a = (0.7 - 0.4) * Math.random() + 0.4;
+    var a =  Math.random();
     var b = (1 - a) * Math.random();
     var innerPoint = trianglePointPick(innerTriangle[0], innerTriangle[1], innerTriangle[2], a, b);
     var outerPoint = trianglePointPick(outerTriangle[0], outerTriangle[1], outerTriangle[2], a, b);
@@ -114,8 +118,7 @@ function createIcebergHull() {
     var hullPoints = generateHullPoints(verticesIceberg);
     var iceBergHull;
     if (algorithm == 'alpha') {
-        iceBergHull = alphaShape(0.1, hullPoints);
-        console.log(iceBergHull);
+        iceBergHull = alphaShape(Math.random()/10, hullPoints);
         for (i = 0; i < iceBergHull.length; i++) {
             indicesIceberg.push(iceBergHull[i][0], iceBergHull[i][1], iceBergHull[i][2]);
         }
@@ -170,7 +173,10 @@ function createBoundPointCloud(numberOfPoints) {
                     ],
                 ]));
             verticesIceberg.push(temp[0], temp[1], temp[2]);
-            colorsIceberg.push(Math.random(), Math.random(), Math.random(), 0.5);
+            if(Math.floor(Math.random()*10%2))
+                colorsIceberg.push(0.8, 0.8, 1.0, 1.0);
+            else
+                colorsIceberg.push(1.0, 1.0, 1.0, 1.0);
         }
     }
 
@@ -178,8 +184,9 @@ function createBoundPointCloud(numberOfPoints) {
 
 function drawScene() {
     glContext.clearColor(0.1, 0.1, 0.1, 1.0);
+    glContext.blendFunc(glContext.SRC_ALPHA, glContext.ONE_MINUS_SRC_ALPHA);
     glContext.enable(glContext.DEPTH_TEST);
-    glContext.disable(glContext.BLEND);
+    glContext.enable(glContext.BLEND);
     glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
     glContext.viewport(0, 0, c_width, c_height);
 
@@ -224,6 +231,11 @@ function drawScene() {
 
     glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, indexBuffer);
     glContext.drawElements(glContext.TRIANGLES, indicesIceberg.length, glContext.UNSIGNED_SHORT, 0);
+
+    if(water){
+        draw_water();
+    }
+
 }
 
 function initWebGL() {

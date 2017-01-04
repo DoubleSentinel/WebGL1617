@@ -17,11 +17,8 @@
         uniform mat4 uMVMatrix;
         uniform mat4 uPMatrix;
 		varying vec4 vColor;
-		varying vec3 vVertexPosition;
         void main(void) {
 			vColor = aColor;
-			gl_PointSize = 10.0;
-			vVertexPosition = aVertexPosition;
 			gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
         }
     </script>
@@ -34,7 +31,7 @@
           precision highp float;
         #endif
 		varying vec4 vColor;
-		varying vec3 vVertexPosition;
+		uniform float uAlpha;
         void main(void) {
 			gl_FragColor = vColor;
 		}
@@ -51,6 +48,7 @@
     <script src="js/quickhull3d/lib/VertexList.js"></script>
     <script src="js/alpha-shape/alphaShape.js"></script>
     <script src="js/my_classes/procedural_iceberg.js"></script>
+    <script src="js/my_classes/environment.js"></script>
 
 </head>
 <body onload="initWebGL()">
@@ -59,7 +57,8 @@
     HTML5 is not supported
 </canvas>
 <button id="generate" onclick="initBuffers()">Generate</button>
-<label>Show bounding box wireframe:</label><input type="checkbox" onchange="ViewWireframe()" checked="checked">
+<label>Show bounding box wireframe:</label><input type="checkbox" onchange="ViewWireframe()">
+<label>Show water:</label><input type="checkbox" onchange="ViewWater()" checked="checked">
 <label>Choose hull algorithm:</label>
 <select id="algorithm" onchange="AlgorithmSelector(this.value)">
     <option value="convex">Convex Hull</option>
