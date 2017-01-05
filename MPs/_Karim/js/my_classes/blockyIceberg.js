@@ -52,10 +52,10 @@ class BlockyIceberg extends ProceduralIceberg{
         this.verticesOuterBoundingBox.push(x - dimensionTopPlane, y + dimensionTopPlane, z + d1);
         this.verticesOuterBoundingBox.push(x + dimensionTopPlane, y - dimensionTopPlane, z + d1);//3
         //inner top plane
-        this.verticesInnerBoundingBox.push((x + dimensionTopPlane) * boundingBoxThickness, (y + dimensionTopPlane) * boundingBoxThickness, (z + d1) * boundingBoxThickness);
-        this.verticesInnerBoundingBox.push((x - dimensionTopPlane) * boundingBoxThickness, (y - dimensionTopPlane) * boundingBoxThickness, (z + d1) * boundingBoxThickness);
-        this.verticesInnerBoundingBox.push((x - dimensionTopPlane) * boundingBoxThickness, (y + dimensionTopPlane) * boundingBoxThickness, (z + d1) * boundingBoxThickness);
-        this.verticesInnerBoundingBox.push((x + dimensionTopPlane) * boundingBoxThickness, (y - dimensionTopPlane) * boundingBoxThickness, (z + d1) * boundingBoxThickness);//3
+        this.verticesInnerBoundingBox.push(x + dimensionTopPlane * boundingBoxThickness, y + dimensionTopPlane * boundingBoxThickness, z + d1 * boundingBoxThickness);
+        this.verticesInnerBoundingBox.push(x - dimensionTopPlane * boundingBoxThickness, y - dimensionTopPlane * boundingBoxThickness, z + d1 * boundingBoxThickness);
+        this.verticesInnerBoundingBox.push(x - dimensionTopPlane * boundingBoxThickness, y + dimensionTopPlane * boundingBoxThickness, z + d1 * boundingBoxThickness);
+        this.verticesInnerBoundingBox.push(x + dimensionTopPlane * boundingBoxThickness, y - dimensionTopPlane * boundingBoxThickness, z + d1 * boundingBoxThickness);//3
 
         //top outer plane colorsIceberg
         this.colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
@@ -74,10 +74,10 @@ class BlockyIceberg extends ProceduralIceberg{
         this.verticesOuterBoundingBox.push(x - dimensionWaterPlane, y + dimensionWaterPlane, z);
         this.verticesOuterBoundingBox.push(x + dimensionWaterPlane, y - dimensionWaterPlane, z);//7
         //inner water level
-        this.verticesInnerBoundingBox.push((x + dimensionWaterPlane) * boundingBoxThickness, (y + dimensionWaterPlane) * boundingBoxThickness, z);
-        this.verticesInnerBoundingBox.push((x - dimensionWaterPlane) * boundingBoxThickness, (y - dimensionWaterPlane) * boundingBoxThickness, z);
-        this.verticesInnerBoundingBox.push((x - dimensionWaterPlane) * boundingBoxThickness, (y + dimensionWaterPlane) * boundingBoxThickness, z);
-        this.verticesInnerBoundingBox.push((x + dimensionWaterPlane) * boundingBoxThickness, (y - dimensionWaterPlane) * boundingBoxThickness, z);//3
+        this.verticesInnerBoundingBox.push(x + dimensionWaterPlane * boundingBoxThickness, y + dimensionWaterPlane * boundingBoxThickness, z);
+        this.verticesInnerBoundingBox.push(x - dimensionWaterPlane * boundingBoxThickness, y - dimensionWaterPlane * boundingBoxThickness, z);
+        this.verticesInnerBoundingBox.push(x - dimensionWaterPlane * boundingBoxThickness, y + dimensionWaterPlane * boundingBoxThickness, z);
+        this.verticesInnerBoundingBox.push(x + dimensionWaterPlane * boundingBoxThickness, y - dimensionWaterPlane * boundingBoxThickness, z);//3
 
         //outer water plane colorsIceberg
         this.colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
@@ -96,10 +96,10 @@ class BlockyIceberg extends ProceduralIceberg{
         this.verticesOuterBoundingBox.push(x - dimensionIntermediatePlane, y + dimensionIntermediatePlane, z - h1);
         this.verticesOuterBoundingBox.push(x + dimensionIntermediatePlane, y - dimensionIntermediatePlane, z - h1);//11
         //inner intermediate level
-        this.verticesInnerBoundingBox.push((x + dimensionIntermediatePlane) * boundingBoxThickness, (y + dimensionIntermediatePlane) * boundingBoxThickness, (z - h1) * boundingBoxThickness);
-        this.verticesInnerBoundingBox.push((x - dimensionIntermediatePlane) * boundingBoxThickness, (y - dimensionIntermediatePlane) * boundingBoxThickness, (z - h1) * boundingBoxThickness);
-        this.verticesInnerBoundingBox.push((x - dimensionIntermediatePlane) * boundingBoxThickness, (y + dimensionIntermediatePlane) * boundingBoxThickness, (z - h1) * boundingBoxThickness);
-        this.verticesInnerBoundingBox.push((x + dimensionIntermediatePlane) * boundingBoxThickness, (y - dimensionIntermediatePlane) * boundingBoxThickness, (z - h1) * boundingBoxThickness);//11
+        this.verticesInnerBoundingBox.push(x + dimensionIntermediatePlane * boundingBoxThickness, y + dimensionIntermediatePlane * boundingBoxThickness, z - h1 * boundingBoxThickness);
+        this.verticesInnerBoundingBox.push(x - dimensionIntermediatePlane * boundingBoxThickness, y - dimensionIntermediatePlane * boundingBoxThickness, z - h1 * boundingBoxThickness);
+        this.verticesInnerBoundingBox.push(x - dimensionIntermediatePlane * boundingBoxThickness, y + dimensionIntermediatePlane * boundingBoxThickness, z - h1 * boundingBoxThickness);
+        this.verticesInnerBoundingBox.push(x + dimensionIntermediatePlane * boundingBoxThickness, y - dimensionIntermediatePlane * boundingBoxThickness, z - h1 * boundingBoxThickness);//11
 
         //outer intermediate plane colorsIceberg
         this.colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);
@@ -118,10 +118,10 @@ class BlockyIceberg extends ProceduralIceberg{
         this.verticesOuterBoundingBox.push(x - dimensionBottomPlane, y + dimensionBottomPlane, z - H);
         this.verticesOuterBoundingBox.push(x + dimensionBottomPlane, y - dimensionBottomPlane, z - H);//15
         //inner bottom level
-        this.verticesInnerBoundingBox.push((x + dimensionBottomPlane) * boundingBoxThickness, (y + dimensionBottomPlane) * boundingBoxThickness, (z - H) - (z - H) * (0.9 - boundingBoxThickness));
-        this.verticesInnerBoundingBox.push((x - dimensionBottomPlane) * boundingBoxThickness, (y - dimensionBottomPlane) * boundingBoxThickness, (z - H) - (z - H) * (0.9 - boundingBoxThickness));
-        this.verticesInnerBoundingBox.push((x - dimensionBottomPlane) * boundingBoxThickness, (y + dimensionBottomPlane) * boundingBoxThickness, (z - H) - (z - H) * (0.9 - boundingBoxThickness));
-        this.verticesInnerBoundingBox.push((x + dimensionBottomPlane) * boundingBoxThickness, (y - dimensionBottomPlane) * boundingBoxThickness, (z - H) - (z - H) * (0.9 - boundingBoxThickness));//11
+        this.verticesInnerBoundingBox.push(x + dimensionBottomPlane * boundingBoxThickness, y + dimensionBottomPlane * boundingBoxThickness, z - H * (0.9 - boundingBoxThickness));
+        this.verticesInnerBoundingBox.push(x - dimensionBottomPlane * boundingBoxThickness, y - dimensionBottomPlane * boundingBoxThickness, z - H * (0.9 - boundingBoxThickness));
+        this.verticesInnerBoundingBox.push(x - dimensionBottomPlane * boundingBoxThickness, y + dimensionBottomPlane * boundingBoxThickness, z - H * (0.9 - boundingBoxThickness));
+        this.verticesInnerBoundingBox.push(x + dimensionBottomPlane * boundingBoxThickness, y - dimensionBottomPlane * boundingBoxThickness, z - H * (0.9 - boundingBoxThickness));//11
 
         //outer bottom plane colorsIceberg
         this.colorsOuterBoundingBox.push(1.0, 0.0, 0.0, 1.0);

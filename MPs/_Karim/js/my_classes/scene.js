@@ -56,11 +56,7 @@ function initShaderParameters(prg) {
 function fillObjectsArray() {
     icebergs = [];
     icebergs.push(
-        new BlockyIceberg(0, 0, 0, Math.random() * 10 + 10, 50),
-        new BlockyIceberg(20, 20, 0, Math.random() * 10 + 10, 50),
-        new BlockyIceberg(-20, -20, 0, Math.random() * 10 + 10, 50),
-        new BlockyIceberg(-20, 20, 0, Math.random() * 10 + 10, 50),
-        new BlockyIceberg(20, -20, 0, Math.random() * 10 + 10, 50)
+        new BlockyIceberg(30, 30, 0, Math.random() * 10 + 10, 50)
     );
     createWater();
 }
