@@ -50,6 +50,35 @@
 			}
 		}
     </script>
+
+    <!-- ///////////////////// \\\\\\\\\\\\\\\\\\ -->
+    <!-- //////////VERTEX SHADER SKYBOX\\\\\\\\\\ -->
+    <!-- ///////////////////// \\\\\\\\\\\\\\\\\\ -->
+    <script type="x-shader/x-vertex" id="shader-vs-skybox">
+			 uniform mat4 uPMatrix;
+			 uniform mat4 uMVMatrix;
+			 attribute vec3 aCoords;
+			 varying vec3 vCoords;
+			 void main() {
+				vec4 eyeCoords = uMVMatrix * vec4(aCoords,1.0);
+				vCoords = aCoords;
+				gl_Position = uPMatrix * eyeCoords;
+
+			 }
+		</script>
+
+    <!-- ///////////////////// \\\\\\\\\\\\\\\\\\\\ -->
+    <!-- //////////FRAGMENT SHADER SKYBOX\\\\\\\\\\ -->
+    <!-- ///////////////////// \\\\\\\\\\\\\\\\\\\\ -->
+    <script type="x-shader/x-fragment" id="shader-fs-skybox">
+			 precision mediump float;
+			 varying vec3 vCoords;
+			 uniform samplerCube uSkybox;
+			 void main() {
+				  gl_FragColor = textureCube(uSkybox1, vCoords);
+			 }
+		</script>
+
     <script src="js/alpha-shape/alphaShape.js"></script>
     <script src="js/my_classes/procedural_iceberg.js"></script>
     <script src="js/my_classes/blockyIceberg.js"></script>

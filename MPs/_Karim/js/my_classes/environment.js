@@ -11,6 +11,8 @@ var waterindices = [];
 var watervertices = [];
 var watercolors = [];
 
+
+
 function createWater(){
     waterindices = [];
     watervertices = [];
@@ -36,13 +38,13 @@ function initWaterBuffers(){
 }
 
 function draw_water(){
-    glContext.uniform1i(prg.selector, 2);
+    glContext.uniform1i(ptr.selector, 2);
 
     glContext.bindBuffer(glContext.ARRAY_BUFFER, watervertexBuffer);
-    glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
+    glContext.vertexAttribPointer(ptr.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
 
     glContext.bindBuffer(glContext.ARRAY_BUFFER, watercolorBuffer);
-    glContext.vertexAttribPointer(prg.colorAttribute, 4, glContext.FLOAT, false, 0, 0);
+    glContext.vertexAttribPointer(ptr.colorAttribute, 4, glContext.FLOAT, false, 0, 0);
 
     glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, waterindexBuffer);
     glContext.drawElements(glContext.TRIANGLES, waterindices.length, glContext.UNSIGNED_SHORT, 0);

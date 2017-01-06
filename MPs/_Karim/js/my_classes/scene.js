@@ -9,6 +9,9 @@ var wireframe = false;
 var water = true;
 var algorithm = 'convex';
 var icebergs = [];
+var progIcebergs = null;
+var progSkybox = null;
+var ptr = new Object();
 
 window.onload = displayTitle("Procedural IceBergs");
 window.onkeydown = function (e) {
@@ -40,6 +43,36 @@ function initCamera() {
     mat4.perspective(pMatrix, 45.0, c_width / c_height, 0.1, 1000.0);
 }
 
+function initShaders(){
+
+    /*******************************************
+     * Inits the shader for the skybox rendering
+     *******************************************/
+
+        //Selection of the 2 shader texts for the skybox
+    var vertexShaderSkybox = getTextContent("shader-vs-skybox");
+    var fragmentShaderSkybox = getTextContent("shader-fs-skybox");
+    //Create the program for the shader
+    progSkybox = createProgram(glContext,vertexShaderSkybox,fragmentShaderSkybox);
+
+
+
+
+    /*******************************************
+     * Inits the shader for the scene rendering
+     *******************************************/
+    var vertexShaderScene = getTextContent("shader-vs");
+    var fragmentShaderScene = getTextContent("shader-fs");
+    progIcebergs = createProgram(glContext, vertexShaderScene, fragmentShaderScene);
+
+
+    initShaderParametersNew();
+
+    //We define the planet progam as the current program
+    glContext.useProgram(progIcebergs);
+
+}
+
 function initShaderParameters(prg) {
     prg.vertexPositionAttribute = glContext.getAttribLocation(prg, "aVertexPosition");
     glContext.enableVertexAttribArray(prg.vertexPositionAttribute);
@@ -58,6 +91,27 @@ function initShaderParameters(prg) {
 
     prg.pMatrixUniform = glContext.getUniformLocation(prg, "uPMatrix");
     prg.mvMatrixUniform = glContext.getUniformLocation(prg, "uMVMatrix");
+
+}
+
+function initShaderParametersNew() {
+    ptr.vertexPositionAttribute = glContext.getAttribLocation(progIcebergs, "aVertexPosition");
+    glContext.enableVertexAttribArray(ptr.vertexPositionAttribute);
+
+    ptr.colorAttribute = glContext.getAttribLocation(progIcebergs, "aColor");
+    glContext.enableVertexAttribArray(ptr.colorAttribute);
+
+    //Linking of the attribute "textureCoord"
+    ptr.textureCoordsAttribute = glContext.getAttribLocation(progIcebergs, "aTextureCoord");
+    glContext.enableVertexAttribArray(ptr.textureCoordsAttribute);
+    //Linking a pointer for the color texture
+    ptr.colorTextureUniform = glContext.getUniformLocation(progIcebergs, "uColorTexture");
+
+    //this variable is a color selector
+    ptr.selector = glContext.getUniformLocation(progIcebergs, "uSelector");
+
+    ptr.pMatrixUniform = glContext.getUniformLocation(progIcebergs, "uPMatrix");
+    ptr.mvMatrixUniform = glContext.getUniformLocation(progIcebergs, "uMVMatrix");
 
 }
 
@@ -95,8 +149,8 @@ function drawScene() {
     var mvtMatrix = mat4.create();
     mat4.multiply(mvtMatrix, translationMat, mvMatrix);
 
-    glContext.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
-    glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, mvtMatrix);
+    glContext.uniformMatrix4fv(ptr.pMatrixUniform, false, pMatrix);
+    glContext.uniformMatrix4fv(ptr.mvMatrixUniform, false, mvtMatrix);
 
     for (i = 0; i < icebergs.length; i++) {
         icebergs[i].draw()
@@ -112,7 +166,8 @@ function drawScene() {
 function initWebGL() {
     try {
         glContext = getGLContext('webgl-canvas');
-        initProgram();
+        // initProgram();
+        initShaders();
         initCamera();
         initBuffers();
         renderLoop();

@@ -155,22 +155,22 @@ class ProceduralIceberg {
 
     draw() {
         if (wireframe) {
-            glContext.uniform1i(prg.selector, 2);
+            glContext.uniform1i(ptr.selector, 2);
             //outer wireframe
             glContext.bindBuffer(glContext.ARRAY_BUFFER, this.vertexBufferOuterBoundingBox);
-            glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
+            glContext.vertexAttribPointer(ptr.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
 
             glContext.bindBuffer(glContext.ARRAY_BUFFER, this.colorBufferOuterBoundingBox);
-            glContext.vertexAttribPointer(prg.colorAttribute, 4, glContext.FLOAT, false, 0, 0);
+            glContext.vertexAttribPointer(ptr.colorAttribute, 4, glContext.FLOAT, false, 0, 0);
 
             glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, this.indexBufferBoundingBox);
             glContext.drawElements(glContext.LINE_STRIP, this.indicesBoundingBox.length, glContext.UNSIGNED_SHORT, 0);
             //inner wireframe
             glContext.bindBuffer(glContext.ARRAY_BUFFER, this.vertexBufferInnerBoundingBox);
-            glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
+            glContext.vertexAttribPointer(ptr.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
 
             glContext.bindBuffer(glContext.ARRAY_BUFFER, this.colorBufferInnerBoundingBox);
-            glContext.vertexAttribPointer(prg.colorAttribute, 4, glContext.FLOAT, false, 0, 0);
+            glContext.vertexAttribPointer(ptr.colorAttribute, 4, glContext.FLOAT, false, 0, 0);
 
             glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, this.indexBufferBoundingBox);
             glContext.drawElements(glContext.LINE_STRIP, this.indicesBoundingBox.length, glContext.UNSIGNED_SHORT, 0);
@@ -181,23 +181,23 @@ class ProceduralIceberg {
         //We store the colorTexture pointer(already on the GPU) in the Texture0 slot
         glContext.bindTexture(glContext.TEXTURE_2D, this.texture[0]);
         //We inform that our colorTexture is placed in the Texture0 slot
-        glContext.uniform1i(prg.colorTextureUniform, 0);
+        glContext.uniform1i(ptr.colorTextureUniform, 0);
 
         //We define how to use the texture
         glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_WRAP_S, glContext.REPEAT);
 
         //Transfer of the colors for the iceberg
         glContext.bindBuffer(glContext.ARRAY_BUFFER, this.textureCoordsBuffer);
-        glContext.vertexAttribPointer(prg.textureCoordsAttribute, 2, glContext.FLOAT, false, 0, 0 );
+        glContext.vertexAttribPointer(ptr.textureCoordsAttribute, 2, glContext.FLOAT, false, 0, 0 );
         //------------------------------------------------------------------------------------
 
-        glContext.uniform1i(prg.selector, 0);
+        glContext.uniform1i(ptr.selector, 0);
 
         glContext.bindBuffer(glContext.ARRAY_BUFFER, this.vertexBuffer);
-        glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
+        glContext.vertexAttribPointer(ptr.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
 
         glContext.bindBuffer(glContext.ARRAY_BUFFER, this.colorBuffer);
-        glContext.vertexAttribPointer(prg.colorAttribute, 4, glContext.FLOAT, false, 0, 0);
+        glContext.vertexAttribPointer(ptr.colorAttribute, 4, glContext.FLOAT, false, 0, 0);
 
         glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
         glContext.drawElements(glContext.TRIANGLES, this.indicesIceberg.length, glContext.UNSIGNED_SHORT, 0);
