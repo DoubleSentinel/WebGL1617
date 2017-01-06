@@ -11,7 +11,28 @@ var waterindices = [];
 var watervertices = [];
 var watercolors = [];
 
+//Initialisation of the static texture ressources for the skybox
+function initSkyboxesReferences()
+{
+    var skyboxes = [];
 
+    skyboxes[0] = [];
+    skyboxes[0].push("./assets/skybox/ashcanyon_rt.tga");
+    skyboxes[0].push("./assets/skybox/ashcanyon_lf.tga");
+    skyboxes[0].push("./assets/skybox/ashcanyon_ft.tga");
+    skyboxes[0].push("./assets/skybox/ashcanyon_bk.tga");
+    skyboxes[0].push("./assets/skybox/ashcanyon_up.tga");
+    skyboxes[0].push("./assets/skybox/ashcanyon_dn.tga");
+
+    return skyboxes;
+}
+
+function initSkybox(){
+    glContext.useProgram(progSkybox);
+    //We init the static skybox array
+    skyboxes = initSkyboxesReferences();
+    skybox = new Skybox("Skybox 0", skyboxes);
+}
 
 function createWater(){
     waterindices = [];
@@ -32,12 +53,14 @@ function createWater(){
 }
 
 function initWaterBuffers(){
+    glContext.useProgram(progIcebergs);
     watervertexBuffer = getVertexBufferWithVertices(watervertices);
     watercolorBuffer = getVertexBufferWithVertices(watercolors);
     waterindexBuffer = getIndexBufferWithIndices(waterindices);
 }
 
 function draw_water(){
+    glContext.useProgram(progIcebergs);
     glContext.uniform1i(ptr.selector, 2);
 
     glContext.bindBuffer(glContext.ARRAY_BUFFER, watervertexBuffer);

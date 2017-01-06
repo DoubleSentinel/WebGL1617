@@ -154,6 +154,7 @@ class ProceduralIceberg {
     }
 
     draw() {
+        glContext.useProgram(progIcebergs);
         if (wireframe) {
             glContext.uniform1i(ptr.selector, 2);
             //outer wireframe

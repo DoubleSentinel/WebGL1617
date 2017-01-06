@@ -75,7 +75,7 @@
 			 varying vec3 vCoords;
 			 uniform samplerCube uSkybox;
 			 void main() {
-				  gl_FragColor = textureCube(uSkybox1, vCoords);
+				  gl_FragColor = textureCube(uSkybox, vCoords);
 			 }
 		</script>
 
@@ -91,6 +91,8 @@
     <script src="js/quickhull3d/lib/dependencies.js"></script>
     <script src="js/quickhull3d/lib/VertexList.js"></script>
     <script src="js/my_classes/environment.js"></script>
+    <script src="tools/skybox.js"></script>
+    <script src="tools/skybox-loader.js"></script>
     <script src="js/my_classes/scene.js"></script>
 
 </head>

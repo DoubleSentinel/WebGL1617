@@ -9,6 +9,10 @@ var wireframe = false;
 var water = true;
 var algorithm = 'convex';
 var icebergs = [];
+
+var skyboxes = [];
+var skybox;
+
 var progIcebergs = null;
 var progSkybox = null;
 var ptr = new Object();
@@ -56,8 +60,6 @@ function initShaders(){
     progSkybox = createProgram(glContext,vertexShaderSkybox,fragmentShaderSkybox);
 
 
-
-
     /*******************************************
      * Inits the shader for the scene rendering
      *******************************************/
@@ -73,28 +75,10 @@ function initShaders(){
 
 }
 
-function initShaderParameters(prg) {
-    prg.vertexPositionAttribute = glContext.getAttribLocation(prg, "aVertexPosition");
-    glContext.enableVertexAttribArray(prg.vertexPositionAttribute);
-
-    prg.colorAttribute = glContext.getAttribLocation(prg, "aColor");
-    glContext.enableVertexAttribArray(prg.colorAttribute);
-
-    //Linking of the attribute "textureCoord"
-    prg.textureCoordsAttribute = glContext.getAttribLocation(prg, "aTextureCoord");
-    glContext.enableVertexAttribArray(prg.textureCoordsAttribute);
-    //Linking a pointer for the color texture
-    prg.colorTextureUniform = glContext.getUniformLocation(prg, "uColorTexture");
-
-    //this variable is a color selector
-    prg.selector = glContext.getUniformLocation(prg, "uSelector");
-
-    prg.pMatrixUniform = glContext.getUniformLocation(prg, "uPMatrix");
-    prg.mvMatrixUniform = glContext.getUniformLocation(prg, "uMVMatrix");
-
-}
-
 function initShaderParametersNew() {
+    /*******************************************
+     * Inits the pointers for the scene rendering
+     *******************************************/
     ptr.vertexPositionAttribute = glContext.getAttribLocation(progIcebergs, "aVertexPosition");
     glContext.enableVertexAttribArray(ptr.vertexPositionAttribute);
 
@@ -113,6 +97,21 @@ function initShaderParametersNew() {
     ptr.pMatrixUniform = glContext.getUniformLocation(progIcebergs, "uPMatrix");
     ptr.mvMatrixUniform = glContext.getUniformLocation(progIcebergs, "uMVMatrix");
 
+    /*******************************************
+     * Inits the pointers for the skybox rendering
+     *******************************************/
+
+    //Linking the attribute for the cube map coords
+    ptr.sbCoordsAttribute = glContext.getAttribLocation(progSkybox, "aCoords");
+    glContext.enableVertexAttribArray(ptr.sbCoordsAttribute);
+
+    //Linking the uniform model view matrix for the skybox shader
+    ptr.sbMVMatrixUniform = glContext.getUniformLocation(progSkybox, "uMVMatrix");
+    //Linking the uniform projection matrix for the skybox shader
+    ptr.sbPMatrixUniform = glContext.getUniformLocation(progSkybox, "uPMatrix");
+    //Linking the uniform texture location for the skybox
+    ptr.cubeTextureUniform = glContext.getUniformLocation(progSkybox, "uSkybox");
+
 }
 
 function fillObjectsArray() {
@@ -121,10 +120,12 @@ function fillObjectsArray() {
         new BlockyIceberg(0, 0, 0, Math.random() * 10 + 10, 50)
     );
     createWater();
+    initSkybox();
 }
 
 function initBuffers() {
     fillObjectsArray();
+    glContext.useProgram(progIcebergs);
     for (i = 0; i < icebergs.length; i++) {
         icebergs[i].initTexture();
         icebergs[i].initBuffers();
@@ -139,7 +140,7 @@ function drawScene() {
     glContext.enable(glContext.BLEND);
     glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
     glContext.viewport(0, 0, c_width, c_height);
-
+    glContext.useProgram(progIcebergs);
     rotateModelViewMatrixUsingQuaternion(true);
 
     var translationMat = mat4.create();
@@ -159,14 +160,13 @@ function drawScene() {
     if (water) {
         draw_water();
     }
-
+    skybox.draw(mvMatrix);
 }
 
 
 function initWebGL() {
     try {
         glContext = getGLContext('webgl-canvas');
-        // initProgram();
         initShaders();
         initCamera();
         initBuffers();
