@@ -3,7 +3,7 @@
  */
 
 class ProceduralIceberg {
-    constructor(){
+    constructor() {
         this.vertexBufferOuterBoundingBox = null;
         this.colorBufferOuterBoundingBox = null;
 
@@ -22,10 +22,14 @@ class ProceduralIceberg {
         this.vertexBuffer = null;
         this.indexBuffer = null;
         this.colorBuffer = null;
+        this.textureCoordsBuffer = null;
+
+        this.texture = [];
 
         this.indicesIceberg = [];
         this.verticesIceberg = [];
         this.colorsIceberg = [];
+        this.textureCoord = [];
     }
 
     generateHullPoints(vertices) {
@@ -58,11 +62,17 @@ class ProceduralIceberg {
             iceBergHull = alphaShape(Math.random() / 10, hullPoints);
             for (var i = 0; i < iceBergHull.length; i++) {
                 this.indicesIceberg.push(iceBergHull[i][0], iceBergHull[i][1], iceBergHull[i][2]);
+                // this.textureCoord.push(iceBergHull[i][0], iceBergHull[i][1]);
+                // this.textureCoord.push(iceBergHull[i][1], iceBergHull[i][2]);
+                // this.textureCoord.push(iceBergHull[i][2], iceBergHull[i][0]);
             }
         } else if (algorithm == 'convex') {
             iceBergHull = this.generateHull(hullPoints);
             for (i = 0; i < iceBergHull.length; i++) {
                 this.indicesIceberg.push(iceBergHull[i][0], iceBergHull[i][1], iceBergHull[i][2]);
+                // this.textureCoord.push(iceBergHull[i][0], iceBergHull[i][1]);
+                // this.textureCoord.push(iceBergHull[i][1], iceBergHull[i][2]);
+                // this.textureCoord.push(iceBergHull[i][2], iceBergHull[i][0]);
             }
         }
     }
@@ -110,6 +120,11 @@ class ProceduralIceberg {
                         ],
                     ]));
                 this.verticesIceberg.push(temp[0], temp[1], temp[2]);
+
+                this.textureCoord.push(Math.random(),Math.random());
+                this.textureCoord.push(Math.random(),Math.random());
+                this.textureCoord.push(Math.random(),Math.random());
+
                 if (Math.floor(Math.random() * 10 % 2))
                     this.colorsIceberg.push(0.8, 0.8, 1.0, 1.0);
                 else
@@ -118,7 +133,11 @@ class ProceduralIceberg {
         }
     }
 
-    initBuffers(){
+    initTexture(){
+        initTextureWithImage('./assets/textures/iceberg0.jpg',this.texture);
+    }
+
+    initBuffers() {
         this.vertexBufferOuterBoundingBox = getVertexBufferWithVertices(this.verticesOuterBoundingBox);
         this.colorBufferOuterBoundingBox = getVertexBufferWithVertices(this.colorsOuterBoundingBox);
         this.indexBufferBoundingBox = getIndexBufferWithIndices(this.indicesBoundingBox);
@@ -129,10 +148,14 @@ class ProceduralIceberg {
         this.vertexBuffer = getVertexBufferWithVertices(this.verticesIceberg);
         this.colorBuffer = getVertexBufferWithVertices(this.colorsIceberg);
         this.indexBuffer = getIndexBufferWithIndices(this.indicesIceberg);
+
+        this.textureCoordsBuffer = getVertexBufferWithVertices(this.textureCoord);
+
     }
 
-    draw(){
+    draw() {
         if (wireframe) {
+            glContext.uniform1i(prg.selector, 2);
             //outer wireframe
             glContext.bindBuffer(glContext.ARRAY_BUFFER, this.vertexBufferOuterBoundingBox);
             glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
@@ -152,6 +175,23 @@ class ProceduralIceberg {
             glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, this.indexBufferBoundingBox);
             glContext.drawElements(glContext.LINE_STRIP, this.indicesBoundingBox.length, glContext.UNSIGNED_SHORT, 0);
         }
+        //------------------------------TEXTURE WORK----------------------------------------
+        //We enable the Texture0 slot
+        glContext.activeTexture(glContext.TEXTURE0);
+        //We store the colorTexture pointer(already on the GPU) in the Texture0 slot
+        glContext.bindTexture(glContext.TEXTURE_2D, this.texture[0]);
+        //We inform that our colorTexture is placed in the Texture0 slot
+        glContext.uniform1i(prg.colorTextureUniform, 0);
+
+        //We define how to use the texture
+        glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_WRAP_S, glContext.REPEAT);
+
+        //Transfer of the colors for the iceberg
+        glContext.bindBuffer(glContext.ARRAY_BUFFER, this.textureCoordsBuffer);
+        glContext.vertexAttribPointer(prg.textureCoordsAttribute, 2, glContext.FLOAT, false, 0, 0 );
+        //------------------------------------------------------------------------------------
+
+        glContext.uniform1i(prg.selector, 0);
 
         glContext.bindBuffer(glContext.ARRAY_BUFFER, this.vertexBuffer);
         glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
@@ -161,5 +201,9 @@ class ProceduralIceberg {
 
         glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
         glContext.drawElements(glContext.TRIANGLES, this.indicesIceberg.length, glContext.UNSIGNED_SHORT, 0);
+    }
+
+    exportOBJ() {
+        var iceberg = {'vertices': this.vertices, 'indices': this.indices, 'colors': this.colors}
     }
 }

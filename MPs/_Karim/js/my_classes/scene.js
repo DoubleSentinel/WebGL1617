@@ -10,7 +10,6 @@ var water = true;
 var algorithm = 'convex';
 var icebergs = [];
 
-
 window.onload = displayTitle("Procedural IceBergs");
 window.onkeydown = function (e) {
     switch (e.keyCode) {
@@ -48,6 +47,15 @@ function initShaderParameters(prg) {
     prg.colorAttribute = glContext.getAttribLocation(prg, "aColor");
     glContext.enableVertexAttribArray(prg.colorAttribute);
 
+    //Linking of the attribute "textureCoord"
+    prg.textureCoordsAttribute = glContext.getAttribLocation(prg, "aTextureCoord");
+    glContext.enableVertexAttribArray(prg.textureCoordsAttribute);
+    //Linking a pointer for the color texture
+    prg.colorTextureUniform = glContext.getUniformLocation(prg, "uColorTexture");
+
+    //this variable is a color selector
+    prg.selector = glContext.getUniformLocation(prg, "uSelector");
+
     prg.pMatrixUniform = glContext.getUniformLocation(prg, "uPMatrix");
     prg.mvMatrixUniform = glContext.getUniformLocation(prg, "uMVMatrix");
 
@@ -56,7 +64,7 @@ function initShaderParameters(prg) {
 function fillObjectsArray() {
     icebergs = [];
     icebergs.push(
-        new BlockyIceberg(30, 30, 0, Math.random() * 10 + 10, 50)
+        new BlockyIceberg(0, 0, 0, Math.random() * 10 + 10, 50)
     );
     createWater();
 }
@@ -64,10 +72,12 @@ function fillObjectsArray() {
 function initBuffers() {
     fillObjectsArray();
     for (i = 0; i < icebergs.length; i++) {
-        icebergs[i].initBuffers()
+        icebergs[i].initTexture();
+        icebergs[i].initBuffers();
     }
     initWaterBuffers();
 }
+
 function drawScene() {
     glContext.clearColor(0.1, 0.1, 0.1, 1.0);
     glContext.blendFunc(glContext.SRC_ALPHA, glContext.ONE_MINUS_SRC_ALPHA);
@@ -97,6 +107,7 @@ function drawScene() {
     }
 
 }
+
 
 function initWebGL() {
     try {

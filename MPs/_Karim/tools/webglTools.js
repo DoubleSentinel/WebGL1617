@@ -173,7 +173,6 @@ function getArrayBufferWithArray(values) {
     return vBuffer;
 }
 
-
 function initTextureWithImage(sFilename, texturen) {
     var anz = texturen.length;
     texturen[anz] = glContext.createTexture();
@@ -216,6 +215,48 @@ function initTextureWithImage(sFilename, texturen) {
     glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_WRAP_S, glContext.CLAMP_TO_EDGE);
     glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_WRAP_T, glContext.CLAMP_TO_EDGE);
 }
+// function initTextureWithImage(sFilename, texturen) {
+//     var anz = texturen.length;
+//     texturen[anz] = glContext.createTexture();
+//
+//     texturen[anz].image = new Image();
+//     texturen[anz].image.onload = function() {
+//         glContext.bindTexture(glContext.TEXTURE_2D, texturen[anz]);
+//         glContext.pixelStorei(glContext.UNPACK_FLIP_Y_WEBGL, true);
+//         glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, glContext.RGBA, glContext.UNSIGNED_BYTE, texturen[anz].image);
+//         glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
+//         glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.NEAREST);
+//
+//         glContext.generateMipmap(glContext.TEXTURE_2D);
+//
+//         glContext.bindTexture(glContext.TEXTURE_2D, null);
+//     }
+//
+//     texturen[anz].image.src = sFilename;
+//
+//     // let's use a canvas to make textures, with by default a random color (red, green, blue)
+//     function rnd() {
+//         return Math.floor(Math.random() * 256);
+//     }
+//
+//     var c = document.createElement("canvas");
+//     c.width = 64;
+//     c.height = 64;
+//     var ctx = c.getContext("2d");
+//     var red = rnd();
+//     var green = rnd();
+//     var blue = rnd();
+//     ctx.fillStyle = "rgb(" + red + "," + green + "," + blue + ")";
+//
+//     ctx.fillRect(0, 0, 64, 64);
+//
+//     glContext.bindTexture(glContext.TEXTURE_2D, texturen[anz]);
+//     glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, glContext.RGBA, glContext.UNSIGNED_BYTE, c);
+//     glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
+//     glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.NEAREST);
+//     glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_WRAP_S, glContext.CLAMP_TO_EDGE);
+//     glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_WRAP_T, glContext.CLAMP_TO_EDGE);
+// }
 
 function calculateTangents(vs, tc, ind) {
     var i;

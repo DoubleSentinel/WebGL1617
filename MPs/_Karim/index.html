@@ -13,12 +13,18 @@
     <!-- /////////////////\\\\\\\\\\\\\\\\ -->
     <script id="shader-vs" type="x-shader/x-vertex">
         attribute vec3 aVertexPosition;
+        attribute vec2 aTextureCoord;
         attribute vec4 aColor;
+
         uniform mat4 uMVMatrix;
         uniform mat4 uPMatrix;
+
 		varying vec4 vColor;
+        varying vec2 vTextureCoord;
+
         void main(void) {
 			vColor = aColor;
+			vTextureCoord = aTextureCoord;
 			gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
         }
     </script>
@@ -30,12 +36,19 @@
         #ifdef GL_ES
           precision highp float;
         #endif
+        uniform sampler2D uColorTexture;
+        uniform int uSelector;
+
 		varying vec4 vColor;
-		uniform float uAlpha;
+		varying vec2 vTextureCoord;
         void main(void) {
-			gl_FragColor = vColor;
+            if(uSelector == 0){
+			    gl_FragColor = texture2D(uColorTexture, vTextureCoord);
+			}
+			else {
+			    gl_FragColor = vColor;
+			}
 		}
-        
     </script>
     <script src="js/alpha-shape/alphaShape.js"></script>
     <script src="js/my_classes/procedural_iceberg.js"></script>
