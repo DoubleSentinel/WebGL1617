@@ -6,7 +6,7 @@ class SkyboxTexture{
 		this.images = images;
 		//We define an array to store the loaded textures
 		this.imagesLoaded = [];
-	    console.log(this.images);
+
 		//We init each target for the CUBE_MAP, each enum defines a side of the cube
 		this.targets = [
 					   glContext.TEXTURE_CUBE_MAP_POSITIVE_X, glContext.TEXTURE_CUBE_MAP_NEGATIVE_X, 
@@ -20,13 +20,16 @@ class SkyboxTexture{
 		this.cntLoad = 0;
 		
 		this.loaded = false;
+		
 		this.initTextureCube();
+		
 		
 	}
 	
 	//Texture cube creation after the loading of each side
 	textureLoading(){
 		this.cntLoad++;
+
 		//When all the sides are loaded
 		if(this.cntLoad == 6){
 			//We create the texture
@@ -35,6 +38,7 @@ class SkyboxTexture{
 			glContext.bindTexture(glContext.TEXTURE_CUBE_MAP, this.texID);
 			for(var i = 0;i<6;i++)
 			{
+				console.log(this.imagesLoaded[i]);
 				//We set the texture for each target
 				glContext.texImage2D(this.targets[i], 0, glContext.RGBA, glContext.RGBA, glContext.UNSIGNED_BYTE, this.imagesLoaded[i]);
 				//And define how it should be stretched
@@ -57,6 +61,7 @@ class SkyboxTexture{
 		{
 			this.imagesLoaded[j] = new Image();
 			this.imagesLoaded[j].onload = this.textureLoading.bind(this);
+
 			this.imagesLoaded[j].src = this.images[j];
 		}
 	}

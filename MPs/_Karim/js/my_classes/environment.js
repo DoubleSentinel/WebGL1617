@@ -17,12 +17,12 @@ function initSkyboxesReferences()
     var skyboxes = [];
 
     skyboxes[0] = [];
-    skyboxes[0].push("./assets/skybox/ashcanyon_rt.tga");
-    skyboxes[0].push("./assets/skybox/ashcanyon_lf.tga");
-    skyboxes[0].push("./assets/skybox/ashcanyon_ft.tga");
-    skyboxes[0].push("./assets/skybox/ashcanyon_bk.tga");
-    skyboxes[0].push("./assets/skybox/ashcanyon_up.tga");
-    skyboxes[0].push("./assets/skybox/ashcanyon_dn.tga");
+    skyboxes[0].push("./assets/skybox/ashcanyon_rt.png");
+    skyboxes[0].push("./assets/skybox/ashcanyon_lf.png");
+    skyboxes[0].push("./assets/skybox/ashcanyon_ft.png");
+    skyboxes[0].push("./assets/skybox/ashcanyon_bk.png");
+    skyboxes[0].push("./assets/skybox/ashcanyon_up.png");
+    skyboxes[0].push("./assets/skybox/ashcanyon_dn.png");
 
     return skyboxes;
 }
