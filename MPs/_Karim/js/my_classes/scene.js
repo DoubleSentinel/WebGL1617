@@ -44,7 +44,7 @@ function AlgorithmSelector(name) {
 
 function initCamera() {
     mat4.identity(mvMatrix);
-    mat4.perspective(pMatrix, 45.0, c_width / c_height, 0.1, 1000.0);
+    mat4.perspective(pMatrix, 45.0, c_width / c_height, 0.1, 10000.0);
 }
 
 function initShaders(){
@@ -117,7 +117,7 @@ function initShaderParametersNew() {
 function fillObjectsArray() {
     icebergs = [];
     icebergs.push(
-        new BlockyIceberg(0, 0, 0, Math.random() * 10 + 10, 50)
+        new BlockyIceberg(0, 0, 0, Math.random() * 10 + 10, 10)
     );
     createWater();
     initSkybox();
