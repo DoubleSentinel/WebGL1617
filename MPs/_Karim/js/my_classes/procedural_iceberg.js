@@ -59,20 +59,14 @@ class ProceduralIceberg {
         var hullPoints = this.generateHullPoints(this.verticesIceberg);
         var iceBergHull;
         if (algorithm == 'alpha') {
-            iceBergHull = alphaShape(Math.random() / 10, hullPoints);
+            iceBergHull = alphaShape(0.05, hullPoints);
             for (var i = 0; i < iceBergHull.length; i++) {
                 this.indicesIceberg.push(iceBergHull[i][0], iceBergHull[i][1], iceBergHull[i][2]);
-                // this.textureCoord.push(iceBergHull[i][0], iceBergHull[i][1]);
-                // this.textureCoord.push(iceBergHull[i][1], iceBergHull[i][2]);
-                // this.textureCoord.push(iceBergHull[i][2], iceBergHull[i][0]);
             }
         } else if (algorithm == 'convex') {
             iceBergHull = this.generateHull(hullPoints);
             for (i = 0; i < iceBergHull.length; i++) {
                 this.indicesIceberg.push(iceBergHull[i][0], iceBergHull[i][1], iceBergHull[i][2]);
-                // this.textureCoord.push(iceBergHull[i][0], iceBergHull[i][1]);
-                // this.textureCoord.push(iceBergHull[i][1], iceBergHull[i][2]);
-                // this.textureCoord.push(iceBergHull[i][2], iceBergHull[i][0]);
             }
         }
     }
