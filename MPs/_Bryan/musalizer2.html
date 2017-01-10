@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8" />
+        <title id="titre">Muzaliser</title>
+        <!-- Bootstrap
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-MfvZlkHCEqatNoGiOXveE8FIwMzZg4W85qfrfIFBfYc= sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">-->
+
+        <!-- END Bootstrap -->
+        <link rel="stylesheet" href="css/stylesheet.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+        <script src="ex/js/commonFunctions.js"></script>
+    		<script src='ex/js/gl-matrix-min.js'></script>
+    		<script src='ex/js/webglTools.js'></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <style>
+          body, html{min-height: 100%; height: 100%; overflow: hidden;}
+          .full-height{height: 100%;}
+        </style>
+
+        <script id="shader-vs" type="x-shader/x-vertex">
+    			attribute vec3 aVertexPosition;
+    			attribute vec4 aColor;
+    			attribute float aRadius;
+    			attribute float aCenterX;
+    			attribute float aCenterY;
+    			attribute float aOpacity;
+    			attribute float aBorder;
+    		    uniform mat4 uMVMatrix;
+    		    uniform mat4 uPMatrix;
+    			varying vec4 vColor;
+    			varying vec4 vPosition;
+    			varying float opacity;
+    			varying float vRadius;
+    			varying float vCenterX;
+    			varying float vCenterY;
+    			varying float vOpacity;
+    			varying float vBorder;
+    		    void main(void) {
+
+    				gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+    				vColor = aColor;
+    				vPosition = gl_Position;
+    				vRadius = aRadius;
+    				vCenterX = aCenterX;
+    				vCenterY = aCenterY;
+    				vOpacity = aOpacity;
+    				vBorder = aBorder;
+    			}
+    		</script>
+    		<script id="shader-fs" type="x-shader/x-fragment">
+    			#ifdef GL_ES
+    				precision highp float;
+    			#endif
+    			varying vec4 vPosition;
+    			varying vec4 vColor;
+    			varying float vRadius;
+    			varying float vCenterX;
+    			varying float vCenterY;
+    			varying float vOpacity;
+    			varying float vBorder;
+    			void main(void) {
+    				float half_pi = 1.5708;
+    				float dist = sqrt(pow(vPosition.x - vCenterX, 2.0) + pow(vPosition.y - vCenterY, 2.0)) / vRadius;
+    				vec4 finalColor = vec4 (0.0, 0.0, 0.0, 0.0);
+    				if (dist <= 1.0 && dist >= vBorder){
+    					float intensity = sin(((dist - vBorder)/(1.0 - vBorder))*(half_pi*2.0));
+    					vec3 ambientColor = vColor.xyz;
+    					finalColor = vec4(ambientColor, intensity * intensity *  vOpacity);
+    					gl_FragColor = finalColor;
+    				}
+    			}
+    		</script>
+        <script>
+            var vertexBuffer = null;
+            var indexBuffer = null;
+            var colorBuffer = null;
+            var indices = [];
+            var vertices = [];
+            var colors = [];
+            //Tableau servant de liste d'attente
+            var tabLignes = [];
+            var verticesTemp = [];
+            var colorsTemp = [];
+            var rowsVertices = [];
+            var rowsColors= [];
+            var rotY = 0;
+            var rotX = 0;
+            //On choisi si on veut de la perspective ou non
+            var perspective = true;
+            var minS = 5;
+            var maxS = 20;
+
+            var rayon = 0.1;
+      			var circle1 = [0, 0, 0.1, 0.1];
+      			var circle2 = [0, 0, 0.05, 0.9];
+      			var circles = [];
+      			circles.push(circle1);
+      			circles.push(circle2);
+      			var deltaRadius = 0.01;
+      			var border = 0.99;
+            var beforeAmp = 0.00;
+
+            //Couleur de base :
+            var red = 0.96;
+            var green = 0.496;
+            var blue = 0.184;
+            //Couleur destination :
+            var redDest = 0.96;
+            var greenDest = 0.496;
+            var blue = 0.184;
+            //Pas couleur
+            var pasRed = 0.0;
+            var pasGreen = 0.0;
+            var pasBlue = 0.0;
+
+            var mvMatrix = mat4.create();
+            var pMatrix = mat4.create();
+            var frequencyData = [];
+            var nb = 0;
+
+            const MAX_VALUE = 255;
+            const MIN_VALUE = 0;
+
+            //const NB_FREQUENCIES = 1024;
+            const NB_FREQUENCIES = 660;
+            const NB_ROWS = 30;
+            const NB_ITERATION_FOR_COLOR_CHANGING = 300;
+            const INVERSE_NB_ITERATION_FOR_COLOR_CHANGING = 1/NB_ITERATION_FOR_COLOR_CHANGING;
+
+            window.onkeydown = checkKey;
+            //On regarde pour la rotation
+            function checkKey(ev){
+                //Pour garder la compatibilité IE...
+                var key = ev.which || ev.keyCode;
+                switch(key)
+                {
+                    case 78:
+                        //create new circle
+                        var circle = [0,0, rayon, Math.random()];
+                        circles.push(circle);
+                        break;
+                    case 65:{
+                        rotY -= 2.0;
+                        break;
+                    }
+                    case 68:{
+                        rotY += 2.0;
+                        break;
+                    }
+                    case 87:{
+                        rotX -= 2.0;
+                        break;
+                    }
+                    case 83:{
+                        rotX += 2.0;
+                        break;
+                    }
+                    case 79:{
+                        option_modal();
+                        break;
+                    }
+                    default:
+                    break;
+                }
+                initBuffers();
+            }
+
+            function resize(canvas) {
+              // Lookup the size the browser is displaying the canvas.
+              var displayWidth  = document.getElementById("webgl-canvas").offsetWidth;
+              var displayHeight = document.getElementById("webgl-canvas").offsetHeight;
+
+              // Check if the canvas is not the same size.
+              if (canvas.width  != displayWidth ||
+                  canvas.height != displayHeight) {
+
+
+                // Make the canvas the same size
+                if(displayWidth > displayHeight){
+                  canvas.width  = displayHeight;
+                  canvas.height = displayHeight;
+                }else{
+                  canvas.width  = displayWidth;
+                  canvas.height = displayWidth;
+                }
+              }
+            }
+
+            function cameraFct(perspective)
+            {
+              translationMat = mat4.create();
+              mat4.identity(translationMat);
+              if( perspective ){
+                mat4.perspective(pMatrix, degToRad(60.0), glContext.canvas.width / glContext.canvas.height, 0.1, 1000.0);
+                var tx = 0.0;
+                var ty = 0.0;
+                var tz = -2.0;
+                mat4.translate(translationMat,translationMat, [tx, ty, tz]);
+              }
+              else{
+                mat4.identity(pMatrix);
+                mat4.ortho(pMatrix, -1.0, 1.0, -1.0, 1.0 ,1.0, -1.0);
+              }
+              rotateModelViewMatrixUsingQuaternion(true);
+              glContext.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
+              glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, mat4.multiply(mat4.create(), translationMat, mvMatrix));
+            }
+
+
+            function initShaderParameters(prg) {
+              prg.vertexPositionAttribute = glContext.getAttribLocation(prg, "aVertexPosition");
+                glContext.enableVertexAttribArray(prg.vertexPositionAttribute);
+                prg.colorAttribute 			= glContext.getAttribLocation(prg, "aColor");
+                glContext.enableVertexAttribArray(prg.colorAttribute);
+                prg.pMatrixUniform          = glContext.getUniformLocation(prg, 'uPMatrix');
+                prg.mvMatrixUniform         = glContext.getUniformLocation(prg, 'uMVMatrix');
+              prg.radiusAttribute = glContext.getAttribLocation(prg, "aRadius");
+              prg.centerXAttribute = glContext.getAttribLocation(prg, "aCenterX");
+              prg.centerYAttribute = glContext.getAttribLocation(prg, "aCenterY");
+              prg.opacityAttribute = glContext.getAttribLocation(prg, 'aOpacity');
+              prg.borderAttribute = glContext.getAttribLocation(prg, 'aBorder');
+            }
+
+            function initBuffers()
+            {
+
+                indices = [];
+                colors = [];
+                vertices = [];
+
+                if(frequencyData.length > 0)
+                {
+                    modifyColor();
+                }
+                var i = 0;
+        				circles.forEach(function(circle){
+        					indices.push(i,i+1,i+3,i+2);
+                  colors.push(red, green, blue, 1.0);
+                  colors.push(red, green, blue, 1.0);
+                  colors.push(red, green, blue, 1.0);
+                  colors.push(red, green, blue, 1.0);
+
+        					/*colors.push(0.0, 0.5, 1.0, circle[3],
+        								0.0, 0.5, 1.0, circle[3],
+        								0.0, 0.5, 1.0, circle[3],
+        								0.0, 0.5, 1.0, circle[3]);*/
+        					vertices.push(circle[0] - circle[2], circle[1] + circle[2], 0.0,
+        						circle[0] + circle[2], circle[1] + circle[2], 0.0,
+        						circle[0] + circle[2], circle[1] - circle[2], 0.0,
+        						circle[0] - circle[2], circle[1] - circle[2], 0.0);
+        						i += 4;
+        				});
+        				vertexBuffer = getVertexBufferWithVertices(vertices);
+        				indexBuffer = getIndexBufferWithIndices(indices);
+        				colorBuffer = getVertexBufferWithVertices(colors);
+            }
+
+            function modifyColor()
+            {
+                if(equals(red,redDest,0.000001))
+                {
+                    redDest = Math.random();
+                    greenDest = Math.random();
+                    blueDest = Math.random();
+
+                    pasRed = (redDest - red) * INVERSE_NB_ITERATION_FOR_COLOR_CHANGING;
+                    pasGreen = (greenDest - green) * INVERSE_NB_ITERATION_FOR_COLOR_CHANGING;
+                    pasBlue = (blueDest - blue) * INVERSE_NB_ITERATION_FOR_COLOR_CHANGING;
+                }
+                red += pasRed;
+                blue += pasBlue;
+                green += pasGreen;
+            }
+
+            function equals(nb1, nb2, epsilon)
+            {
+                return (Math.abs(nb1 - nb2) < epsilon);
+            }
+
+            function degToRad(degrees)
+            {
+                return( degrees * Math.PI / 180.0 );
+            }
+
+            function drawScene()
+            {
+               resize(glContext.canvas)
+                circles = circles.map(e => {
+        					e[2] += deltaRadius;
+        					return e;
+        				}).filter(e => e[2] < 2);
+        				initBuffers();
+
+                glContext.clearColor(0.0, 0.0, 0.0, 1.0);
+        				glContext.blendFunc(glContext.SRC_ALPHA, glContext.ONE_MINUS_SRC_ALPHA);
+        				glContext.enable(glContext.BLEND);
+        				glContext.disable(glContext.DEPTH_TEST);
+        				glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
+        				glContext.viewport(0, 0, glContext.canvas.width, glContext.canvas.height);
+        				cameraFct(perspective);
+        				glContext.bindBuffer(glContext.ARRAY_BUFFER, vertexBuffer);
+        				glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
+        				glContext.bindBuffer(glContext.ARRAY_BUFFER, colorBuffer);
+        				glContext.vertexAttribPointer(prg.colorAttribute, 4, glContext.FLOAT, false, 0, 0);
+        				glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, indexBuffer);
+        				var offset = 0;
+        				circles.forEach(function(circle){
+        					glContext.vertexAttrib1f(prg.centerXAttribute, circle[0]);
+        					glContext.vertexAttrib1f(prg.centerYAttribute, circle[1]);
+        					glContext.vertexAttrib1f(prg.radiusAttribute, circle[2]);
+        					glContext.vertexAttrib1f(prg.opacityAttribute, circle[3]);
+        					glContext.vertexAttrib1f(prg.borderAttribute, border);
+        					glContext.drawElements(glContext.TRIANGLE_STRIP, 4, glContext.UNSIGNED_SHORT, offset);
+        					offset += 8;
+        				});
+            }
+
+            function initWebGL()
+            {
+                glContext = getGLContext('webgl-canvas');
+                initProgram();
+                initBuffers();
+                renderLoop();
+            }
+            function changeRayon(rayonValue){
+      				rayon = rayonValue/100;
+      			}
+      			function changeVitesse(vitesse){
+      				deltaRadius = vitesse/500;
+      			}
+      			function changeBorder(borderValue){
+      				border = 1 - borderValue/200;
+      			}
+            function changeMinimalSeuil(minimalSeuilValue){
+              minS = minimalSeuilValue;
+            }
+            function changeMaximalSeuil(maximalSeuilValue){
+              maxS = maximalSeuilValue;
+            }
+        </script>
+    </head>
+    <body onload="initWebGL()">
+    <div class="container-fluid full-height">
+      <div class="col-md-2 full-height">
+        <div class="row">
+          <h1>Musalizer v2</h1>
+          <hr/>
+        </div>
+        <div class="row">
+          <h3>Choix musique</h3>
+          <label for="audio_file">Depuis votre ordinateur</label>
+          <input class="form-control" id="audio_file" type="file" accept="audio/*" onchange="startMusic(this.files)" />
+          <label for="sample">Sample de base</label>
+          <button class="form-control btn btn-primary " onclick="loadSample()">Load Sample</buton>
+        </div>
+        <div class="row">
+          <h3>Choix visualisation</h3>
+          <select class="form-control" id="choix_visualisation">
+            <option id="v1">Version 1</option>
+            <option id="v2">Version 2</option>
+          </select>
+        </div>
+        <div class="row">
+          <h3>Configuration</h3>
+        </div>
+        <div class="row">
+          <label>Rayon de base</label>
+          <input type="range" id="rayon" min="1" max="10" value="5" step="1" />
+          <span id="textRayon">5</span>
+        </div>
+        <div class="row">
+          <label>Vitesse</label>
+          <input type="range" id="range" min="1" max="10" value="5" step="1" />
+          <span id="text">5</span>
+        </div>
+        <div class="row">
+          <label>Bordure du cercle</label>
+          <input type="range" id="borderWidth" min="1" max="10" value="5" step="1" />
+          <span id="textBorderWidth">5</span>
+        </div>
+        <div class="row">
+          <label>Seuil minimum</label>
+          <input type="range" id="minimalSeuil" min="1" max="10" value="5" step="1" />
+          <span id="textMinimalSeuil">5</span>
+        </div>
+        <div class="row">
+          <label>Seuil maximum</label>
+          <input type="range" id="maximalSeuil" min="11" max="40" value="20" step="1" />
+          <span id="textMaximalSeuil">20</span>
+        </div>
+      </div>
+      <div class="col-md-10 full-height" style="padding:0px">
+        <div class="canvas-and-player full-width full-height" id="canvas-div">
+          <canvas id="webgl-canvas" width="700" height="700">
+            HTML5 is not supported
+          </canvas>
+        </div>
+      </div>
+    </div>
+
+
+        <!-- Audio file modal -->
+        <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" id="modal-musique">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Choisissez votre musique</h3>
+                    </div>
+                    <div class="modal-body">
+                        <input id="audio_file" type="file" accept="audio/*" onchange="startMusic(this.files)" />
+                        <button onclick="loadSample()">Load Sample</buton>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Option modal -->
+        <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel2" id="modal-option">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+
+                        </div>
+                        <div class="row">
+                            <div id="player-div" class="col-xs-12 col-md-12">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <script type="text/javascript">
+        var rayon = document.getElementById('rayon');
+        rayon.addEventListener("mousemove", function(){
+          document.getElementById('textRayon').innerHTML= this.value;
+          changeRayon(this.value);
+        })
+        var vitesse = document.getElementById('range');
+        vitesse.addEventListener("mousemove", function () {
+          document.getElementById("text").innerHTML= this.value;
+          changeVitesse(this.value);
+        });
+
+        var border = document.getElementById('borderWidth');
+        border.addEventListener("mousemove", function(){
+          document.getElementById("textBorderWidth").innerHTML = this.value;
+          changeBorder(this.value);
+        });
+
+        var minimalSeuil = document.getElementById('minimalSeuil');
+        minimalSeuil.addEventListener("mousemove", function(){
+          document.getElementById('textMinimalSeuil').innerHTML = this.value;
+          changeMinimalSeuil(this.value);
+        })
+
+        var maximalSeuil = document.getElementById('maximalSeuil');
+        maximalSeuil.addEventListener("mousemove", function(){
+          document.getElementById('textMaximalSeuil').innerHTML = this.value;
+          changeMaximalSeuil(this.value);
+        })
+
+        </script>
+        <script>
+            var canvas = document.getElementById('webgl-canvas');
+            var index = 0;
+            var largeurCarre = 4;
+
+            function loadSample(){
+              startMusic();
+            }
+
+            function onBodyLoad()
+            {
+                updateCanvasSize();
+                initWebGL();
+            }
+
+            function updateCanvasSize()
+            {
+                /*var canvas = document.getElementById("webgl-canvas");
+                canvas.width  = window.innerWidth;
+                canvas.height = window.innerHeight;
+                c_width = canvas.width;
+                c_height = canvas.height;*/
+
+            }
+
+            //audio_file.onchange = startMusic(audio_file);
+
+            function startMusic(f)
+            {
+                //On ferme la fenêtre modal
+                $('#modal-musique').modal('hide');
+                //Permet de masquer les scrolls bars qui apparaissent sans que je sache pourquoi :/
+                //Source des deux lignes suivantes : http://stackoverflow.com/questions/26745292/canvas-toggle-filling-whole-page-removing-scrollbar
+                document.body.scrollTop = 0; // <-- pull the page back up to the top
+                //document.body.style.overflow = 'hidden'; // <-- relevant addition
+
+                //On retire les balises audio déjà présente
+                var audioDiv = document.getElementById("player-div");
+                while(audioDiv.firstChild)
+                {
+                    audioDiv.removeChild(audioDiv.firstChild);
+                }
+                if(f == null){
+                  var files = f;
+                  //var files = this.files;
+                  //On regarde si Window.URL existe, si ce n'est pas le cas, on utilie webkit
+                  //ça permet de savoir si on utilise Firefox ou Chrome/Chromium
+                  var file = './sample.mp3';
+                }else{
+                  var files = f;
+                  //var files = this.files;
+                  //On regarde si Window.URL existe, si ce n'est pas le cas, on utilie webkit
+                  //ça permet de savoir si on utilise Firefox ou Chrome/Chromium
+                  var file = (window.URL ? URL : webkitURL).createObjectURL(files[0]);
+                }
+
+                var audio = new Audio();
+                audio.src = file;
+                audio.id = 'player';
+                audio.controls = true;
+                audio.autoplay = true;
+                audioDiv.appendChild(audio);
+                var context = new AudioContext();
+                var analyser = context.createAnalyser();
+                //analyser.fftSize = 2048;
+                analyser.fftSize = 2048;
+                //La "range" est de [0 , 255] dans le domaine N
+                frequencyData = new Uint8Array(analyser.frequencyBinCount);
+                // frequencyBinCount : orrespond en général au nombre de valeurs que vous aurez à manipuler pour la visualisation.
+
+                var source = context.createMediaElementSource(audio);
+                source.connect(analyser);
+                analyser.connect(context.destination);
+
+                $(audio).bind("ended",function(){
+                    location.reload();
+                });
+
+                // Méthode permettant de mettre à jour l'affichage
+                function renderFrame() {
+                    // Va appeler renderFrame en boucle
+                    requestAnimationFrame(renderFrame);
+                    // met à jour les données dans frequenCyData
+                    analyser.getByteFrequencyData(frequencyData);
+                    if(nb % 3 == 0){
+                    var somme = 0;
+                    for (var i = 0; i < frequencyData.length; i++) {
+                      somme = somme + frequencyData[i];
+                    }
+                    var amplitude = somme / frequencyData.length;
+                    if(amplitude - beforeAmp > minS){
+                        console.log(amplitude/maxS);
+                        var circle = [0,0, rayon, ((amplitude - beforeAmp)/maxS)];
+                        circles.push(circle);
+                    }
+                    beforeAmp = amplitude;
+                  }
+                  nb = nb + 1;
+
+
+                    //getByteFrequencyData : copie les données de fréquence dans le Uint8Array passé en argument
+                    initBuffers();
+                }
+                renderFrame();
+            };
+
+            window.onresize = function(event)
+            {
+                updateCanvasSize();
+            };
+
+        </script>
+        <script src="ex/js/mouseMotionHandling.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha256-Sk3nkD6mLTMOF0EOpNtsIry+s1CsaqQC1rVLTAy+0yc= sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+    </body>
+</html>
