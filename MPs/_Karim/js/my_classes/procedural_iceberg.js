@@ -5,7 +5,7 @@
 class ProceduralIceberg {
     constructor() {
         this.animationStep = 0;
-        this.translation = 0;
+        this.translation = Math.random()/100;
 
         this.vertexBufferOuterBoundingBox = null;
         this.colorBufferOuterBoundingBox = null;

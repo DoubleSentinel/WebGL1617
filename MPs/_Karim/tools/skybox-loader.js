@@ -38,7 +38,6 @@ class SkyboxTexture{
 			glContext.bindTexture(glContext.TEXTURE_CUBE_MAP, this.texID);
 			for(var i = 0;i<6;i++)
 			{
-				console.log(this.imagesLoaded[i]);
 				//We set the texture for each target
 				glContext.texImage2D(this.targets[i], 0, glContext.RGBA, glContext.RGBA, glContext.UNSIGNED_BYTE, this.imagesLoaded[i]);
 				//And define how it should be stretched
