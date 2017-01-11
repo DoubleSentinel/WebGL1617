@@ -87,33 +87,7 @@
       indexBuffer = getIndexBufferWithIndices(indices);
       textCoordsBuffer = getArrayBufferWithArray(textCoords);
     }
-    /*  var vertexBuffer = null;
-			var indexBuffer = null;
-      var normalBuffer = null;
-			var textCoordsBuffer = null;
-			var texColorTab = new Array();
-			var indices = [];
-			var vertices = [];
-			var textCoords =[];
-			var mvMatrix = mat4.create();
-			var pMatrix = mat4.create();
-      var nMatrix  = mat4.create();
-      var rotateMatrix = mat4.create();
-      mat4.identity(rotateMatrix);
-			var textureSize = 512;
-
-      function initShaderParameters(prg){
-				prg.vertexPositionAttribute = glContext.getAttribLocation(prg, "aVertexPosition");
-				glContext.enableVertexAttribArray(prg.vertexPositionAttribute);
-				prg.textureCoordsAttribute  = glContext.getAttribLocation(prg, "aTextureCoord");
-				glContext.enableVertexAttribArray(prg.textureCoordsAttribute);
-				prg.pMatrixUniform          = glContext.getUniformLocation(prg, 'uPMatrix');
-				prg.mvMatrixUniform         = glContext.getUniformLocation(prg, 'uMVMatrix');
-        prg.nMatrixUniform	        = glContext.getUniformLocation(prg, "uNMatrix");
-				prg.modeUniform 		    = glContext.getUniformLocation(prg, "uMode");
-				prg.uColorTexture 			= glContext.getUniformLocation(prg, "uColorTexture");
-			}
-
+    /*
       //Paramètres qui déterminent où on va faire le rendu
       var TEXTURE_RENDERING_MODE = 1;
       var SCREEN_RENDERING_MODE = 0;
@@ -122,7 +96,8 @@
       var rttTexture = new Array();*/
       //var rttFramebuffer = new Array();
       var rttTexture = new Array();
-      var pixels = new Float32Array();//Pour pouvoir prendre les float de la texture.
+      var pixels = new Float32Array(4);//Pour pouvoir prendre les float de la texture.
+      var texture;// = createBaseTexture(textureSize, texColorTab);
 
       function initTextureFramebuffer(texture) {
       	var fb = glContext.createFramebuffer();
@@ -140,12 +115,17 @@
         glContext.framebufferTexture2D(glContext.FRAMEBUFFER, glContext.COLOR_ATTACHMENT0, glContext.TEXTURE_2D, texture, 0);
         glContext.framebufferRenderbuffer(glContext.FRAMEBUFFER, glContext.DEPTH_ATTACHMENT, glContext.RENDERBUFFER, renderbuffer);
 
-        glContext.readPixels(10, 10, textureSize, textureSize, glContext.RGBA, glContext.FLOAT, pixels);//On lit les pixels
+        //console.log(textureSize);
+        for(i=0; i<textureSize;i++){
+          for(j=0; j<textureSize; j++){
+            glContext.readPixels(0, 0, i, j, glContext.RGBA, glContext.FLOAT, pixels);//On lit les pixels
+            //console.log(pixels);//Ne donne que des 0
+          }
+        }
 
         glContext.bindTexture(glContext.TEXTURE_2D, null);
         glContext.bindRenderbuffer(glContext.RENDERBUFFER, null);
         glContext.bindFramebuffer(glContext.FRAMEBUFFER, null);//Unbind texture
-        console.log(pixels[0]);
       }
 
     /*  var renderPasses = 0;
@@ -180,33 +160,6 @@
 				glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
 				glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.NEAREST);
       }
-      /*
-        function createBaseTexture(textureSize, texturen){
-			    var c = document.createElement("canvas");
-				  c.width = textureSize;
-				  c.height = textureSize;
-				  var ctx = c.getContext("2d");//return 2D rendering context
-				  var red = 0;
-				  var green = 0;
-				  var blue = 0;
-				  ctx.fillStyle = "rgb(" + red + "," + green + "," + blue + ")";
-				  ctx.fillRect(0, 0, textureSize, textureSize);//Dessine un rectangle
-				  red = green = blue = 255;
-				  ctx.fillStyle = "rgb(" + red + "," + green + "," + blue + ")";
-				  for (var y = 0; y < textureSize; y ++){
-					  for (var x = 0; x < textureSize; x ++){
-              //Faire ici les calculs et tout
-						  if (Math.random() > 0.9){
-							  ctx.fillRect(x, y, 1, 1);
-						  }
-					  }
-				  }
-				  var anz = texturen.length;
-				  texturen[anz] = glContext.createTexture();
-				  generateTextureWith2Darray(c, texturen[anz]);
-			}
-
-      var currentTextureIndx;*/
 
       function createBaseTexture(textureSize, texturen){//Dessiner sur la canvas et le passer en texture Donc c'est là qu'il faudra venir avec les matrices
         var c = document.createElement("canvas");
@@ -214,13 +167,13 @@
         //j'exècute cette ligne. Je n'ai pas résolus le problème vu que ce n'est pas si important.
         c.width = textureSize;
         c.height = textureSize;
-         var ctx = c.getContext("2d");
+         var ctx = c.getContext("2d", {preserveDrawingBuffer: true});
          console.log(ctx);
          var red = 1;//C'est les couleures qui sont importantes
          var green = 0;
          var blue = 0;
          ctx.fillStyle = "rgb(" + red + "," + green + "," + blue + ")";
-         ctx.fillRect(10,10,textureSize,textureSize);//On s'en fout où est le rectangle
+         ctx.fillRect(0,0,textureSize,textureSize);//On s'en fout où est le rectangle
 
          var anz = texturen.length;
          texturen[anz] = glContext.createTexture();
@@ -230,7 +183,7 @@
       }
 
 
-      function drawScene(){
+      function drawScene(){//est appelée dans renderLoop() dans les webglTools
         glContext.clearColor(0.0,0.0,0.0,1.0);
         glContext.enable(glContext.DEPTH_TEST);
         glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
@@ -250,7 +203,8 @@
         glContext.vertexAttribPointer(prg.textureCoordsAttribute, 2, glContext.FLOAT, false, 0, 0);
 
         glContext.activeTexture(glContext.TEXTURE0);
-        glContext.bindTexture(glContext.TEXTURE_2D, null);
+        glContext.bindTexture(glContext.TEXTURE_2D, null);//ici on doit passer le nom de la texture créée, qu'on veut dessiner dans la scène, donc celle du résultat plutôt.
+        //Ou plutôt balancer les deux textures pour faire les calculs dans le fragment sharder ?
         glContext.uniform1i(prg.uColorTexture, 0);//Lien pour transmettre la texture au fragment shader
       }
 
@@ -264,7 +218,7 @@
         initBuffers();
         console.log("initBuffers");
         //A voir si cette fonction est utile
-        var texture = createBaseTexture(textureSize, texColorTab);
+        texture = createBaseTexture(textureSize, texColorTab);
         console.log("createBaseTexture "+texture);
         initTextureFramebuffer(texture);
         console.log("initTextureFramebuffer");
