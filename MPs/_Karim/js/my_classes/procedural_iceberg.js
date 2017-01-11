@@ -4,6 +4,9 @@
 
 class ProceduralIceberg {
     constructor() {
+        this.animationStep = 0;
+        this.translation = 0;
+
         this.vertexBufferOuterBoundingBox = null;
         this.colorBufferOuterBoundingBox = null;
 
@@ -147,10 +150,17 @@ class ProceduralIceberg {
 
     }
 
+    tick(){
+        this.animationStep+=0.01;
+        this.translation = Math.sin(this.animationStep)
+    }
+
     draw() {
         glContext.useProgram(progIcebergs);
+        glContext.uniform1f(ptr.translation,this.translation);
+        glContext.uniform1i(ptr.selector,0);
         if (wireframe) {
-            glContext.uniform1i(ptr.selector, 2);
+            glContext.uniform1i(ptr.colorselector, 2);
             //outer wireframe
             glContext.bindBuffer(glContext.ARRAY_BUFFER, this.vertexBufferOuterBoundingBox);
             glContext.vertexAttribPointer(ptr.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
@@ -186,7 +196,7 @@ class ProceduralIceberg {
         glContext.vertexAttribPointer(ptr.textureCoordsAttribute, 2, glContext.FLOAT, false, 0, 0 );
         //------------------------------------------------------------------------------------
 
-        glContext.uniform1i(ptr.selector, 0);
+        glContext.uniform1i(ptr.colorselector, 0);
 
         glContext.bindBuffer(glContext.ARRAY_BUFFER, this.vertexBuffer);
         glContext.vertexAttribPointer(ptr.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);

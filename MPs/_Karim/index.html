@@ -18,6 +18,8 @@
 
         uniform mat4 uMVMatrix;
         uniform mat4 uPMatrix;
+        uniform float uTranslation;
+        uniform int uSelector;
 
 		varying vec4 vColor;
         varying vec2 vTextureCoord;
@@ -25,7 +27,13 @@
         void main(void) {
 			vColor = aColor;
 			vTextureCoord = aTextureCoord;
-			gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+
+			if(uSelector == 0 || uSelector == 1){
+			    gl_Position = uPMatrix * uMVMatrix * vec4(vec3(aVertexPosition.x,aVertexPosition.y,aVertexPosition.z+uTranslation), 1.0);
+			}
+			else{
+			    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+			}
         }
     </script>
 
@@ -37,12 +45,13 @@
           precision highp float;
         #endif
         uniform sampler2D uColorTexture;
-        uniform int uSelector;
 
 		varying vec4 vColor;
 		varying vec2 vTextureCoord;
+		uniform int uTextureSelector;
+
         void main(void) {
-            if(uSelector == 0){
+            if(uTextureSelector == 0){
 			    gl_FragColor = texture2D(uColorTexture, vTextureCoord);
 			}
 			else {

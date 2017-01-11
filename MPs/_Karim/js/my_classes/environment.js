@@ -61,6 +61,7 @@ function initWaterBuffers(){
 
 function draw_water(){
     glContext.useProgram(progIcebergs);
+    glContext.uniform1i(ptr.colorselector, 2);
     glContext.uniform1i(ptr.selector, 2);
 
     glContext.bindBuffer(glContext.ARRAY_BUFFER, watervertexBuffer);

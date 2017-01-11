@@ -32,7 +32,7 @@ class BlockyIceberg extends ProceduralIceberg{
 
         //setting procedural heights
         var d1 = height;
-        var D = d1 * 10;
+        var D = d1 * 8;
         var H = D * 0.9;
         var h1 = H * ((0.9 - 0.5) * Math.random() + 0.5);
 

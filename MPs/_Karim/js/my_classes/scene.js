@@ -4,7 +4,7 @@
 
 var mvMatrix = mat4.create();
 var pMatrix = mat4.create();
-var translateZ = -10;
+var translateZ = -100;
 var wireframe = false;
 var water = true;
 var algorithm = 'convex';
@@ -91,8 +91,14 @@ function initShaderParametersNew() {
     //Linking a pointer for the color texture
     ptr.colorTextureUniform = glContext.getUniformLocation(progIcebergs, "uColorTexture");
 
-    //this variable is a color selector
+    //this variable is an object selector for the vertex shader
     ptr.selector = glContext.getUniformLocation(progIcebergs, "uSelector");
+
+    //this variable is a color selector
+    ptr.colorselector = glContext.getUniformLocation(progIcebergs, "uTextureSelector");
+
+    //this variable is for the floating animation
+    ptr.translation = glContext.getUniformLocation(progIcebergs,"uTranslation");
 
     ptr.pMatrixUniform = glContext.getUniformLocation(progIcebergs, "uPMatrix");
     ptr.mvMatrixUniform = glContext.getUniformLocation(progIcebergs, "uMVMatrix");
@@ -125,8 +131,7 @@ function fillObjectsArray() {
 function updateIcebergs(){
     icebergs = [];
     icebergs.push(
-        new BlockyIceberg(0, 0, 0, Math.random() * 10 + 10, 10),
-        new BlockyIceberg(10, 10, 0, Math.random() * 10 + 10, 10)
+        new BlockyIceberg(0, 0, 0, Math.random() * 10 + 10, 20)
     );
     for (i = 0; i < icebergs.length; i++) {
         icebergs[i].initTexture();
@@ -150,20 +155,10 @@ function drawScene() {
     glContext.enable(glContext.BLEND);
     glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
     glContext.viewport(0, 0, c_width, c_height);
-    glContext.useProgram(progIcebergs);
-    rotateModelViewMatrixUsingQuaternion(true);
 
-    var translationMat = mat4.create();
-    mat4.identity(translationMat);
-    mat4.translate(translationMat, translationMat, [0.0, 0.0, translateZ]);
-
-    var mvtMatrix = mat4.create();
-    mat4.multiply(mvtMatrix, translationMat, mvMatrix);
-
-    glContext.uniformMatrix4fv(ptr.pMatrixUniform, false, pMatrix);
-    glContext.uniformMatrix4fv(ptr.mvMatrixUniform, false, mvtMatrix);
 
     for (i = 0; i < icebergs.length; i++) {
+        icebergs[i].tick();
         icebergs[i].draw()
     }
 
@@ -171,6 +166,19 @@ function drawScene() {
         draw_water();
     }
     skybox.draw(mvMatrix);
+
+    glContext.useProgram(progIcebergs);
+    rotateModelViewMatrixUsingQuaternion(true);
+
+    var translationMat = mat4.create();
+    // mat4.identity(translationMat);
+    mat4.translate(translationMat, translationMat, [0.0, 0.0, translateZ]);
+
+    var mvtMatrix = mat4.create();
+    mat4.multiply(mvtMatrix, translationMat, mvMatrix);
+
+    glContext.uniformMatrix4fv(ptr.pMatrixUniform, false, pMatrix);
+    glContext.uniformMatrix4fv(ptr.mvMatrixUniform, false, mvtMatrix);
 }
 
 
