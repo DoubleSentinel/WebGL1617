@@ -4,8 +4,8 @@
 
 class ProceduralIceberg {
     constructor() {
-        this.animationStep = 0;
-        this.translation = Math.random()/100;
+        this.animationStep = Math.random();
+        this.translation = 0;
 
         this.vertexBufferOuterBoundingBox = null;
         this.colorBufferOuterBoundingBox = null;
@@ -152,7 +152,7 @@ class ProceduralIceberg {
 
     tick(){
         this.animationStep+=0.01;
-        this.translation = Math.sin(this.animationStep)
+        this.translation = Math.sin(this.animationStep);
     }
 
     draw() {

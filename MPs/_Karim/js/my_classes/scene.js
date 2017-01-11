@@ -130,10 +130,16 @@ function fillObjectsArray() {
 }
 function updateIcebergs(){
     icebergs = [];
-    icebergs.push(
-        new BlockyIceberg(0, 0, 0, Math.random() * 10 + 10, 20),
-        new BlockyIceberg(30, 30, 0, Math.random() * 10 + 10, 20)
-    );
+    var plusOrMinus = 1;
+    var minusOrPlus = 1;
+    for (i=0; i < 30; i++){
+        plusOrMinus=Math.random() < 0.5 ? -1 : 1;
+        minusOrPlus=Math.random() < 0.5 ? -1 : 1;
+        icebergs.push(
+            new BlockyIceberg(Math.random()*100 * plusOrMinus, Math.random()*100 * minusOrPlus, 0, Math.random() * 10 + 10, 20)
+        );
+    }
+
     for (i = 0; i < icebergs.length; i++) {
         icebergs[i].initTexture();
         icebergs[i].initBuffers();

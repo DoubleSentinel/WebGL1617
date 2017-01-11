@@ -12,7 +12,7 @@ function scalar3D(a, v) {
 }
 
 function trianglePointPick(v1, v2, v3, a, b) {
-    //finding point in a  triangle with verticesIceberg v1,v2,v3:
+    //finding point in a  triangle with vertices v1,v2,v3:
     // _   _      _    _       _    _
     // x = v1 + a(v2 - v1) + b(v3 - v1)
     return add3D(v1, add3D(scalar3D(a, sub3D(v2, v1)), scalar3D(b, sub3D(v3, v1))));
