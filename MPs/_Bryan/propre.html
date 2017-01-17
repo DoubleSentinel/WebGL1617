@@ -48,8 +48,7 @@
     		    uniform mat4 uMVMatrix;
     		    uniform mat4 uPMatrix;
     			varying vec4 vColor;
-    			varying vec4 vPosition;
-    			varying float opacity;
+    			varying vec3 vPosition;
     			varying float vRadius;
     			varying float vCenterX;
     			varying float vCenterY;
@@ -57,9 +56,9 @@
     			varying float vBorder;
     		    void main(void) {
 
-    				gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+    				gl_Position = uPMatrix * uMVMatrix * vec4(vec3(aVertexPosition.x, aVertexPosition.y, aVertexPosition.z + (aOpacity * 0.1)), 1.0);
     				vColor = aColor;
-    				vPosition = gl_Position;
+    				vPosition = aVertexPosition;
     				vRadius = aRadius;
     				vCenterX = aCenterX;
     				vCenterY = aCenterY;
@@ -92,7 +91,7 @@
     			#ifdef GL_ES
     				precision highp float;
     			#endif
-    			varying vec4 vPosition;
+    			varying vec3 vPosition;
     			varying vec4 vColor;
     			varying float vRadius;
     			varying float vCenterX;
@@ -107,12 +106,15 @@
     					float intensity = sin(((dist - vBorder)/(1.0 - vBorder))*(half_pi*2.0));
     					vec3 ambientColor = vColor.xyz;
     					finalColor = vec4(ambientColor, intensity * intensity *  vOpacity);
-    					gl_FragColor = finalColor;
+
+              gl_FragColor = finalColor;
+
     				}
     			}
     		</script>
 
         <script>
+            var prout = 0;
             var progPlanet = null;
             var progSkybox = null;
             var prg = null;
@@ -136,13 +138,13 @@
             var circles = [];
             var beforeAmp = 0.00;
             //On choisi si on veut de la perspective ou non
-            var perspective = false;
+            var perspective = true;
             var minS = 5;
             var maxS = 20;
 
             var rayon = 0.1;
       			var deltaRadius = 0.01;
-      			var border = 0.99;
+      			var border = 0.975;
 
             //Couleur de base :
             var red = 0.96;
@@ -274,7 +276,7 @@
                 mat4.perspective(pMatrix, degToRad(40.0), c_width*stretch_width / c_height, 0.1, 10000.0);
                 var tx = 0.0;
                 var ty = 0.0;
-                var tz = -4.0;
+                var tz = -6.0;
                 mat4.translate(translationMat,translationMat, [tx, ty, tz]);
                 rotateModelViewMatrixUsingQuaternion(true);
                 glContext.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
@@ -287,7 +289,7 @@
                   mat4.perspective(pMatrix, degToRad(60.0), glContext.canvas.width / glContext.canvas.height, 0.1, 1000.0);
                   var tx = 0.0;
                   var ty = 0.0;
-                  var tz = -2.0;
+                  var tz = -1.0;
                   mat4.translate(translationMat,translationMat, [tx, ty, tz]);
                 }
                 else{
@@ -527,7 +529,7 @@
                 }).filter(e => e[2] < 2);
                 initBuffers();
 
-                 glContext.clearColor(0.0, 0.0, 0.0, 1.0);
+                glContext.clearColor(0.0, 0.0, 0.0, 1.0);
                 glContext.blendFunc(glContext.SRC_ALPHA, glContext.ONE_MINUS_SRC_ALPHA);
                 glContext.enable(glContext.BLEND);
                 glContext.disable(glContext.DEPTH_TEST);
@@ -544,6 +546,7 @@
                   glContext.vertexAttrib1f(prg.centerXAttribute, circle[0]);
                   glContext.vertexAttrib1f(prg.centerYAttribute, circle[1]);
                   glContext.vertexAttrib1f(prg.radiusAttribute, circle[2]);
+                  console.log(circle[3]);
                   glContext.vertexAttrib1f(prg.opacityAttribute, circle[3]);
                   glContext.vertexAttrib1f(prg.borderAttribute, border);
                   glContext.drawElements(glContext.TRIANGLE_STRIP, 4, glContext.UNSIGNED_SHORT, offset);
@@ -556,10 +559,13 @@
             function initWebGL()
             {
                 glContext = getGLContext('webgl-canvas');
-                //initProgram();
                 initShaders();
                 initBuffers();
-                renderLoop();
+                if(prout == 0){
+                    renderLoop();
+                    prout++;
+                }
+
             }
             function changeRayon(rayonValue){
       				rayon = rayonValue/100;
@@ -568,7 +574,7 @@
       				deltaRadius = vitesse/500;
       			}
       			function changeBorder(borderValue){
-      				border = 1 - borderValue/200;
+              border = 1 - borderValue/200;
       			}
             function changeMinimalSeuil(minimalSeuilValue){
               minS = minimalSeuilValue;
@@ -675,31 +681,31 @@
 
 
         <script type="text/javascript">
-        var rayon = document.getElementById('rayon');
-        rayon.addEventListener("mousemove", function(){
+        var rayonSlide = document.getElementById('rayon');
+        rayonSlide.addEventListener("mousemove", function(){
           document.getElementById('textRayon').innerHTML= this.value;
           changeRayon(this.value);
         })
-        var vitesse = document.getElementById('range');
-        vitesse.addEventListener("mousemove", function () {
+        var vitesseSlide = document.getElementById('range');
+        vitesseSlide.addEventListener("mousemove", function () {
           document.getElementById("text").innerHTML= this.value;
           changeVitesse(this.value);
         });
 
-        var border = document.getElementById('borderWidth');
-        border.addEventListener("mousemove", function(){
+        var borderSlide = document.getElementById('borderWidth');
+        borderSlide.addEventListener("mousemove", function(){
           document.getElementById("textBorderWidth").innerHTML = this.value;
           changeBorder(this.value);
         });
 
-        var minimalSeuil = document.getElementById('minimalSeuil');
-        minimalSeuil.addEventListener("mousemove", function(){
+        var minimalSeuilSlide = document.getElementById('minimalSeuil');
+        minimalSeuilSlide.addEventListener("mousemove", function(){
           document.getElementById('textMinimalSeuil').innerHTML = this.value;
           changeMinimalSeuil(this.value);
         })
 
-        var maximalSeuil = document.getElementById('maximalSeuil');
-        maximalSeuil.addEventListener("mousemove", function(){
+        var maximalSeuilSlide = document.getElementById('maximalSeuil');
+        maximalSeuilSlide.addEventListener("mousemove", function(){
           document.getElementById('textMaximalSeuil').innerHTML = this.value;
           changeMaximalSeuil(this.value);
         })
