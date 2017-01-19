@@ -30,9 +30,8 @@
 			#ifdef GL_ES
 				precision highp float;
 			#endif
-        uniform sampler2D uColorTexture;
+      /*  uniform sampler2D uColorTexture;
         varying vec2 vTextureCoord;
-        uniform int uMode;
 				void main(void) {
           if (gl_FrontFacing){//indique si la primitive est front ou back facing
 					vec2 mapCoord = vec2(vTextureCoord.s, vTextureCoord.t);
@@ -42,13 +41,20 @@
 				}else{
 					gl_FragColor = vec4(1.0,1.0,1.0,1.0);//Si quelque chose ne va pas
 				  }
-				}
+				}*/
+        varying vec2 vTextureCoord;
+        uniform sampler2D uColorTexture;
+        void main(void) {
+            vec4 color = texture2D(uColorTexture, vTextureCoord);
+            gl_FragColor = color;
+        }
     </script>
     <!--WebGL logique-->
     <script>
-    //Texture shit from the book
+    //Texture from the book
     var texColorTab = new Array(); //stocke les textures
     var textCoords = [];
+    var textureA;
 
     var textureSize = 128;
 
@@ -73,11 +79,17 @@
     }
 
     function initBuffers(){
-      vertices = [ -1.0, -1.0, 0.0,
-                   1.0, -1.0, 0.0,
-                  -1.0,  1.0, 0.0,
-                  1.0,  1.0, 0.0 ];
-      indices = [ 0, 1, 2, 3 ];
+    /*  vertices = [ 1.0, 1.0, 0.1,
+                   1.0, -1.0, 0.1,
+                  -1.0,  1.0, 0.1,
+                  -1.0,  -1.0, 0.1 ];*/
+      vertices.push(1.0, 1.0, 0.1);
+      vertices.push(1.0, -1.0, 0.1);
+      vertices.push(-1.0,  1.0, 0.1);
+      vertices.push(-1.0,  -1.0, 0.1);
+
+      indices.push(0, 1, 2, 3);
+      //indices = [ 0, 1, 2, 3 ];
       textCoords = [  0.0, 0.0,
                       0.0, 1.0,
                       1.0, 0.0,
@@ -87,21 +99,10 @@
       indexBuffer = getIndexBufferWithIndices(indices);
       textCoordsBuffer = getArrayBufferWithArray(textCoords);
     }
-    /*
-      //Paramètres qui déterminent où on va faire le rendu
-      var TEXTURE_RENDERING_MODE = 1;
-      var SCREEN_RENDERING_MODE = 0;
-      var renderPasses = 0;
-      var rttFramebuffer = new Array();
-      var rttTexture = new Array();*/
-      //var rttFramebuffer = new Array();
-      var rttTexture = new Array();
-
-      var texture;// = createBaseTexture(textureSize, texColorTab);
 
 //Pris de la fonction createImageFromTexture de cyril
-      function readFromTexture(gl, texture){
-        var canvas = document.getElementById("webgl-canvas");
+      function readFromTexture(gl){
+        var canvas = document.getElementById("canvas2");
         var context = canvas.getContext('2d');
 
         var height = canvas.height;
@@ -109,19 +110,23 @@
 
         var framebuffer = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, textureA, 0);
 
         //readFromTexture
         var pixels = new Uint8Array(width*height*4);//Pour pouvoir prendre les float de la texture.
         //Ne marche finalement pas avec des float, je suis obligée de les prendre en byte. Possibilité d'avoir UNSIGNED_SHORT. Ne semble pas marcher par rapport
         //au framebuffer. Donc ce sera avec des bytes.
         gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-        console.log(pixels);
+        //console.log(pixels);
 
         gl.deleteFramebuffer(framebuffer);
+
+        var imageData = context.createImageData(width, height);
+        imageData.data.set(pixels);
+        context.putImageData(imageData,0,0);
       }
 
-      function initTextureFramebuffer(texture) {
+    /*  function initTextureFramebuffer() {
       	var fb = glContext.createFramebuffer();
         glContext.bindFramebuffer(glContext.FRAMEBUFFER, fb);
         fb.width = textureSize;
@@ -140,39 +145,27 @@
         glContext.bindTexture(glContext.TEXTURE_2D, null);
         glContext.bindRenderbuffer(glContext.RENDERBUFFER, null);
         glContext.bindFramebuffer(glContext.FRAMEBUFFER, null);//Unbind texture
-      }
+      }*/
 
-      function generateTextureWith2Darray(data, newTexture){
-				glContext.bindTexture(glContext.TEXTURE_2D, newTexture);
-				glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, glContext.RGBA, glContext.UNSIGNED_BYTE, data);//Censé prendre le canvas et le passer en texture
-				glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
-				glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.NEAREST);
-      }
-
-      function createBaseTexture(textureSize, texturen){//Dessiner sur la canvas et le passer en texture Donc c'est là qu'il faudra venir avec les matrices
-        var c = document.getElementById("webgl-canvas");
-        var height = c.height;
-        var width = c.width;
-
-        //var ctx = c.getContext('2d');
-         //var ctx = c.getContext('2d', {preserveDrawingBuffer: true});
-         console.log(glContext);
-         var red = 1;//C'est les couleures qui sont importantes
-         var green = 0;
-         var blue = 0;
-         glContext.fillStyle = "rgb(" + red + "," + green + "," + blue + ")";
-         //glContext.fillRect(0,0,textureSize,textureSize);//On s'en fout où est le rectangle
-
-         var anz = texturen.length;
-         texturen[anz] = glContext.createTexture();
-         generateTextureWith2Darray(c, texturen[anz]);
-         //console.log(texturen[anz]);
-         return texturen[anz];
+      function createBaseTexture(){//Dessiner sur la canvas et le passer en texture Donc c'est là qu'il faudra venir avec les matrices
+          textureA = glContext.createTexture();
+           var c = document.createElement("canvas");
+           c.width = 128;
+           c.height = 128;
+           var ctx = c.getContext("2d");
+           ctx.fillStyle="#FF0000";
+           ctx.fillRect(0,0,c.width, c.height);
+           glContext.bindTexture(glContext.TEXTURE_2D, textureA);
+           glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, glContext.RGBA, glContext.UNSIGNED_BYTE, c);
+           glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
+           glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.NEAREST);
+           glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_WRAP_S, glContext.CLAMP_TO_EDGE);
+           glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_WRAP_T, glContext.CLAMP_TO_EDGE);
       }
 
 
       function drawScene(){//est appelée dans renderLoop() dans les webglTools
-        glContext.clearColor(0.0,0.0,0.0,1.0);
+        //glContext.clearColor(0.0,0.0,0.0,1.0);
         glContext.enable(glContext.DEPTH_TEST);
         glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
         glContext.viewport(0,0,c_width,c_height);
@@ -181,8 +174,14 @@
         glContext.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
         glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, mvMatrix);
 
-      //  glContext.bindBuffer(glContext.ARRAY_BUFFER, normalBuffer);
-      //  glContext.vertexAttribPointer(prg.vertexNormalAttribute, 3, glContext.FLOAT, false, 0, 0);
+        glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, indexBuffer);
+
+        glContext.activeTexture(glContext.TEXTURE0);
+        glContext.bindTexture(glContext.TEXTURE_2D, textureA);//ici on doit passer le nom de la texture créée, qu'on veut dessiner dans la scène, donc celle du résultat plutôt.
+
+        //Ou plutôt balancer les deux textures pour faire les calculs dans le fragment sharder ?
+        glContext.uniform1i(prg.uColorTexture, 0);//Lien pour transmettre la texture au fragment shade
+
 
         glContext.bindBuffer(glContext.ARRAY_BUFFER, vertexBuffer);
         glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
@@ -190,14 +189,10 @@
         glContext.bindBuffer(glContext.ARRAY_BUFFER, textCoordsBuffer);
         glContext.vertexAttribPointer(prg.textureCoordsAttribute, 2, glContext.FLOAT, false, 0, 0);
 
-        glContext.activeTexture(glContext.TEXTURE0);
-        glContext.bindTexture(glContext.TEXTURE_2D, null);//ici on doit passer le nom de la texture créée, qu'on veut dessiner dans la scène, donc celle du résultat plutôt.
 
-        glContext.bindFramebuffer(glContext.FRAMEBUFFER, null);
-        readFromTexture(glContext,rttTexture[0]);//Pas sûre du tableau
+        glContext.drawElements(glContext.TRIANGLE_STRIP, indexBuffer.length, glContext.UNSIGNED_SHORT, 0);
 
-        //Ou plutôt balancer les deux textures pour faire les calculs dans le fragment sharder ?
-        glContext.uniform1i(prg.uColorTexture, 0);//Lien pour transmettre la texture au fragment shader
+        readFromTexture(glContext);
       }
 
       function initWebGL(){
@@ -209,12 +204,10 @@
         //prg = glContext.createProgram();
         initBuffers();
         console.log("initBuffers");
-        //A voir si cette fonction est utile
-        texture = createBaseTexture(textureSize, texColorTab);
-        console.log("createBaseTexture "+texture);
-        initTextureFramebuffer(texture);
-        console.log("initTextureFramebuffer");
-        //initTextureFramebuffer(1);
+        createBaseTexture();
+        console.log("createBaseTexture "+textureA);
+      //  initTextureFramebuffer();
+      //  console.log("initTextureFramebuffer");
         renderLoop();
       }
     </script>
@@ -235,6 +228,9 @@
   </table>
   <p>webgl-canvas</p>
   <canvas id="webgl-canvas" width="128" height="128">
+    HTML5 is not supported
+  </canvas>
+  <canvas id="canvas2" width="128" height="128">
     HTML5 is not supported
   </canvas>
   <script>
@@ -289,6 +285,7 @@
         table.deleteRow(row);
       }
     }
+    //Pour que tout le DOM soit construit avant
     initWebGL();
   </script>
 </body>
