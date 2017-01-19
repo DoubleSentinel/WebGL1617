@@ -17,11 +17,14 @@
     <script id="shader-vs" type="x-shader/x-vertex">
       attribute vec3 aVertexPosition;
       attribute vec2 aTextureCoord;
+    //  attribute vec4 aColor;
       uniform mat4 uMVMatrix;
       uniform mat4 uPMatrix;
       varying vec2 vTextureCoord;
+    //  varying vec4 vColor;
       void main(void) {
         vTextureCoord = aTextureCoord;
+        //vColor = aColor;
         gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
       }
     </script>
@@ -30,23 +33,14 @@
 			#ifdef GL_ES
 				precision highp float;
 			#endif
-      /*  uniform sampler2D uColorTexture;
-        varying vec2 vTextureCoord;
-				void main(void) {
-          if (gl_FrontFacing){//indique si la primitive est front ou back facing
-					vec2 mapCoord = vec2(vTextureCoord.s, vTextureCoord.t);
-					vec4 texelColor = texture2D(uColorTexture, mapCoord);
-          //Avoir un deuxième sampler et faire l'addition ici
-					gl_FragColor = texelColor.rgba;
-				}else{
-					gl_FragColor = vec4(1.0,1.0,1.0,1.0);//Si quelque chose ne va pas
-				  }
-				}*/
-        varying vec2 vTextureCoord;
+       varying vec2 vTextureCoord;
         uniform sampler2D uColorTexture;
+        uniform sampler2D uColorTexture2;
+        varying vec4 vColor;
         void main(void) {
             vec4 color = texture2D(uColorTexture, vTextureCoord);
-            gl_FragColor = color;
+            vec4 color2 = texture2D(uColorTexture2, vTextureCoord);
+            gl_FragColor = color+color2;
         }
     </script>
     <!--WebGL logique-->
@@ -55,6 +49,7 @@
     var texColorTab = new Array(); //stocke les textures
     var textCoords = [];
     var textureA;
+    var textureB;
 
     var textureSize = 128;
 
@@ -63,19 +58,21 @@
     var colorBuffer = null;
     var indices = [];
     var vertices = [];
+    var colors = [];
     var mvMatrix = mat4.create();
     var pMatrix = mat4.create();
 
     function initShaderParameters(prg){
       prg.vertexPositionAttribute = glContext.getAttribLocation(prg, "aVertexPosition");
       glContext.enableVertexAttribArray(prg.vertexPositionAttribute);
-      //prg.colorAttribute = glContext.getAttribLocation(prg, "aColor");
+    //  prg.colorAttribute = glContext.getAttribLocation(prg, "aColor");
       prg.textureCoordsAttribute  = glContext.getAttribLocation(prg, "aTextureCoord");
       glContext.enableVertexAttribArray(prg.textureCoordsAttribute);
 
       prg.pMatrixUniform          = glContext.getUniformLocation(prg, 'uPMatrix');
       prg.mvMatrixUniform         = glContext.getUniformLocation(prg, 'uMVMatrix');
       prg.uColorTexture 			= glContext.getUniformLocation(prg, "uColorTexture");
+      prg.uColorTexture2 			= glContext.getUniformLocation(prg, "uColorTexture2");
     }
 
     function initBuffers(){
@@ -88,6 +85,11 @@
       vertices.push(-1.0,  1.0, 0.1);
       vertices.push(-1.0,  -1.0, 0.1);
 
+      colors.push(0.0, 0.0, 1.0, 1.0);
+      colors.push(0.0, 0.0, 1.0, 1.0);
+      colors.push(0.0, 0.0, 1.0, 1.0);
+      colors.push(0.0, 0.0, 1.0, 1.0);
+
       indices.push(0, 1, 2, 3);
       //indices = [ 0, 1, 2, 3 ];
       textCoords = [  0.0, 0.0,
@@ -96,13 +98,14 @@
                       1.0, 1.0 ];
 
       vertexBuffer = getVertexBufferWithVertices(vertices);
+      colorBuffer = getVertexBufferWithVertices(colors);
       indexBuffer = getIndexBufferWithIndices(indices);
-      textCoordsBuffer = getArrayBufferWithArray(textCoords);
+      texColorTab = getArrayBufferWithArray(textCoords);
     }
 
 //Pris de la fonction createImageFromTexture de cyril
-      function readFromTexture(gl){
-        var canvas = document.getElementById("canvas2");
+      function readFromTexture(gl, canvas, texture){
+        var canvas = document.getElementById(canvas);
         var context = canvas.getContext('2d');
 
         var height = canvas.height;
@@ -110,7 +113,7 @@
 
         var framebuffer = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, textureA, 0);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
         //readFromTexture
         var pixels = new Uint8Array(width*height*4);//Pour pouvoir prendre les float de la texture.
@@ -161,6 +164,21 @@
            glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.NEAREST);
            glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_WRAP_S, glContext.CLAMP_TO_EDGE);
            glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_WRAP_T, glContext.CLAMP_TO_EDGE);
+
+
+           textureB = glContext.createTexture();
+           var d = document.createElement("canvas");
+           d.width = 128;
+           d.height = 128;
+           var ctxD = d.getContext("2d");
+           ctxD.fillStyle="#00FF00";
+           ctxD.fillRect(0,0,d.width, d.height);
+           glContext.bindTexture(glContext.TEXTURE_2D, textureB);
+           glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, glContext.RGBA, glContext.UNSIGNED_BYTE, d);
+           glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
+           glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.NEAREST);
+           glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_WRAP_S, glContext.CLAMP_TO_EDGE);
+           glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_WRAP_T, glContext.CLAMP_TO_EDGE);
       }
 
 
@@ -178,21 +196,29 @@
 
         glContext.activeTexture(glContext.TEXTURE0);
         glContext.bindTexture(glContext.TEXTURE_2D, textureA);//ici on doit passer le nom de la texture créée, qu'on veut dessiner dans la scène, donc celle du résultat plutôt.
-
         //Ou plutôt balancer les deux textures pour faire les calculs dans le fragment sharder ?
         glContext.uniform1i(prg.uColorTexture, 0);//Lien pour transmettre la texture au fragment shade
+
+        glContext.activeTexture(glContext.TEXTURE1);
+        glContext.bindTexture(glContext.TEXTURE_2D, textureB);
+        glContext.uniform1i(prg.uColorTexture2, 1);
 
 
         glContext.bindBuffer(glContext.ARRAY_BUFFER, vertexBuffer);
         glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
 
-        glContext.bindBuffer(glContext.ARRAY_BUFFER, textCoordsBuffer);
+      //  glContext.bindBuffer(glContext.ARRAY_BUFFER, colorBuffer);
+      //  glContext.vertexAttribPointer(prg.colorAttribute,4, glContext.FLOAT, false, 0, 0);
+
+        glContext.bindBuffer(glContext.ARRAY_BUFFER, texColorTab);
         glContext.vertexAttribPointer(prg.textureCoordsAttribute, 2, glContext.FLOAT, false, 0, 0);
 
+        //console.log(indices.length);
 
-        glContext.drawElements(glContext.TRIANGLE_STRIP, indexBuffer.length, glContext.UNSIGNED_SHORT, 0);
+        glContext.drawElements(glContext.TRIANGLE_STRIP, indices.length, glContext.UNSIGNED_SHORT, 0);
 
-        readFromTexture(glContext);
+        readFromTexture(glContext,"canvas2", textureA);
+        readFromTexture(glContext, "canvas3", textureB);
       }
 
       function initWebGL(){
@@ -212,7 +238,7 @@
       }
     </script>
 </head>
-<body>
+<body onload="initWebGL()">
   <h2>Entrer un fichier JSON contenant une matrice</h2>
   <input type="file" id="fileJson" name="files[]" accept=".json"/>
   <h3>Voici les deux matrices entrées</h3>
@@ -231,6 +257,9 @@
     HTML5 is not supported
   </canvas>
   <canvas id="canvas2" width="128" height="128">
+    HTML5 is not supported
+  </canvas>
+  <canvas id="canvas3" width="128" height="128">
     HTML5 is not supported
   </canvas>
   <script>
@@ -286,7 +315,7 @@
       }
     }
     //Pour que tout le DOM soit construit avant
-    initWebGL();
+    //initWebGL();
   </script>
 </body>
 </html>
