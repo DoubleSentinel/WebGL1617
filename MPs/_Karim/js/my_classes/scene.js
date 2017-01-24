@@ -9,6 +9,7 @@ var wireframe = false;
 var water = true;
 var algorithm = 'convex';
 var icebergs = [];
+var userinput = {'pts': 20, 'a': 0.05};
 
 var skyboxes = [];
 var skybox;
@@ -30,6 +31,11 @@ window.onkeydown = function (e) {
     }
 };
 
+function updateUserInput(id, value) {
+    userinput[id] = value;
+    console.log(id, value);
+}
+
 function ViewWireframe() {
     wireframe = !wireframe;
 }
@@ -47,7 +53,7 @@ function initCamera() {
     mat4.perspective(pMatrix, 45.0, c_width / c_height, 0.1, 10000.0);
 }
 
-function initShaders(){
+function initShaders() {
 
     /*******************************************
      * Inits the shader for the skybox rendering
@@ -57,7 +63,7 @@ function initShaders(){
     var vertexShaderSkybox = getTextContent("shader-vs-skybox");
     var fragmentShaderSkybox = getTextContent("shader-fs-skybox");
     //Create the program for the shader
-    progSkybox = createProgram(glContext,vertexShaderSkybox,fragmentShaderSkybox);
+    progSkybox = createProgram(glContext, vertexShaderSkybox, fragmentShaderSkybox);
 
 
     /*******************************************
@@ -98,7 +104,7 @@ function initShaderParametersNew() {
     ptr.colorselector = glContext.getUniformLocation(progIcebergs, "uTextureSelector");
 
     //this variable is for the floating animation
-    ptr.translation = glContext.getUniformLocation(progIcebergs,"uTranslation");
+    ptr.translation = glContext.getUniformLocation(progIcebergs, "uTranslation");
 
     ptr.pMatrixUniform = glContext.getUniformLocation(progIcebergs, "uPMatrix");
     ptr.mvMatrixUniform = glContext.getUniformLocation(progIcebergs, "uMVMatrix");
@@ -128,18 +134,35 @@ function fillObjectsArray() {
     createWater();
     initSkybox();
 }
-function updateIcebergs(){
-    icebergs = [];
-    var plusOrMinus = 1;
-    var minusOrPlus = 1;
-    for (i=0; i < 30; i++){
-        plusOrMinus=Math.random() < 0.5 ? -1 : 1;
-        minusOrPlus=Math.random() < 0.5 ? -1 : 1;
-        icebergs.push(
-            new BlockyIceberg(Math.random()*100 * plusOrMinus, Math.random()*100 * minusOrPlus, 0, Math.random() * 10 + 10, 20)
-        );
+function updateIcebergs(id) {
+    if (id == "generate") {
+        icebergs = [];
+        var plusOrMinus;
+        var minusOrPlus;
+        for (i = 0; i < 5; i++) {
+            plusOrMinus = Math.random() < 0.5 ? -1 : 1;
+            minusOrPlus = Math.random() < 0.5 ? -1 : 1;
+            icebergs.push(
+                new BlockyIceberg(Math.random() * 100 * plusOrMinus, Math.random() * 100 * minusOrPlus, 0, Math.random() * 10 + 10, 20)
+            );
+        }
     }
+    else if (id == "clear") {
+        icebergs = [];
+        return
+    }
+    else {
+        console.log(id, userinput['x'], userinput['y'], userinput['h'], userinput['a'], userinput['pts']);
+        icebergs.push(
+            new BlockyIceberg(Number(userinput['x']),
+                              Number(userinput['y']),
+                              0,
+                              Number(userinput['h']),
+                              Number(userinput['pts']),
+                              Number(userinput['a']))
+        );
 
+    }
     for (i = 0; i < icebergs.length; i++) {
         icebergs[i].initTexture();
         icebergs[i].initBuffers();

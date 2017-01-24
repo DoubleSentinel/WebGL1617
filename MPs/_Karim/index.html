@@ -35,6 +35,11 @@
 			    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
 			}
         }
+
+
+
+
+
     </script>
 
     <!-- //////////////////\\\\\\\\\\\\\\\\\ -->
@@ -58,6 +63,11 @@
 			    gl_FragColor = vColor;
 			}
 		}
+
+
+
+
+
     </script>
 
     <!-- ///////////////////// \\\\\\\\\\\\\\\\\\ -->
@@ -74,7 +84,12 @@
 				gl_Position = uPMatrix * eyeCoords;
 
 			 }
-		</script>
+
+
+
+
+
+    </script>
 
     <!-- ///////////////////// \\\\\\\\\\\\\\\\\\\\ -->
     <!-- //////////FRAGMENT SHADER SKYBOX\\\\\\\\\\ -->
@@ -86,7 +101,12 @@
 			 void main() {
 				  gl_FragColor = textureCube(uSkybox, vCoords);
 			 }
-		</script>
+
+
+
+
+
+    </script>
 
     <script src="js/alpha-shape/alphaShape.js"></script>
     <script src="js/my_classes/procedural_iceberg.js"></script>
@@ -107,18 +127,29 @@
 </head>
 <body onload="initWebGL()">
 
-<canvas id="webgl-canvas" width="1900" height="750">
+<canvas id="webgl-canvas" width="1920" height="750">
     HTML5 is not supported
 </canvas>
 </br>
-<button id="generate" onclick="updateIcebergs()">Generate</button>
+<button id="generate" onclick="updateIcebergs(this.id)">Generate 5 random icebergs!</button>
 <label>Show bounding box wireframe:</label><input type="checkbox" onchange="ViewWireframe()">
 <label>Show water:</label><input type="checkbox" onchange="ViewWater()" checked="checked">
 <label>Choose hull algorithm:</label>
 <select id="algorithm" onchange="AlgorithmSelector(this.value)">
     <option value="convex">Convex Hull</option>
     <option value="alpha">Alpha Shape</option>
-</select>
+</select><br/>
+<button id="usergenerate" onclick="updateIcebergs(this.id)">
+    Add
+</button>
+
+<label>Position: x:</label><input type="text" id="x" onkeyup="updateUserInput(this.id, this.value)">
+<label>&nbsp;y:</label><input type="text" id="y" onkeyup="updateUserInput(this.id, this.value)">
+<label>&nbsp;Height from water level:</label><input type="text" id="h" onkeyup="updateUserInput(this.id, this.value)">
+<label>&nbsp;Number of points (precision of iceberg):</label><input type="text" id="pts" value="20" onkeyup="updateUserInput(this.id, this.value)">
+<label>&nbsp;Alpha (for Alpha Shape algorithm):</label><input type="text" id="a" value="0.05" onkeyup="updateUserInput(this.id, this.value)"><br/>
+
+<button id="clear" onclick="updateIcebergs(this.id, 0,0,0,0)">Clear Scene</button>
 <script src="tools/mouseMotionHandling.js"></script>
 </body>
 

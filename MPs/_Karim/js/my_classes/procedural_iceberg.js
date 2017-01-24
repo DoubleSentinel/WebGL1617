@@ -6,6 +6,7 @@ class ProceduralIceberg {
     constructor() {
         this.animationStep = Math.random();
         this.translation = 0;
+        this.alpha = 0.05;
 
         this.vertexBufferOuterBoundingBox = null;
         this.colorBufferOuterBoundingBox = null;
@@ -62,11 +63,12 @@ class ProceduralIceberg {
         var hullPoints = this.generateHullPoints(this.verticesIceberg);
         var iceBergHull;
         if (algorithm == 'alpha') {
-            iceBergHull = alphaShape(0.05, hullPoints);
+            iceBergHull = alphaShape(this.alpha, hullPoints);
             for (var i = 0; i < iceBergHull.length; i++) {
                 this.indicesIceberg.push(iceBergHull[i][0], iceBergHull[i][1], iceBergHull[i][2]);
             }
         } else if (algorithm == 'convex') {
+            console.log(hullPoints);
             iceBergHull = this.generateHull(hullPoints);
             for (i = 0; i < iceBergHull.length; i++) {
                 this.indicesIceberg.push(iceBergHull[i][0], iceBergHull[i][1], iceBergHull[i][2]);

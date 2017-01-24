@@ -4,8 +4,10 @@
 
 
 class BlockyIceberg extends ProceduralIceberg{
-    constructor(x, y, z, height = Math.floor(Math.random() * 20) + 5, numberOfPoints) {
+    constructor(x, y, z, height, numberOfPoints, alpha=0.05) {
         super();
+        console.log('from iceberg',x,y,z,height,numberOfPoints,alpha);
+        this.alpha = alpha;
         this.createBlockyBoundingBox(x, y, z, height);
         this.createBoundPointCloud(numberOfPoints);
         this.createIcebergHull();
