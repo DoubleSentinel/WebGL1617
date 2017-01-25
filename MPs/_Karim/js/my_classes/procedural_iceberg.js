@@ -68,7 +68,6 @@ class ProceduralIceberg {
                 this.indicesIceberg.push(iceBergHull[i][0], iceBergHull[i][1], iceBergHull[i][2]);
             }
         } else if (algorithm == 'convex') {
-            console.log(hullPoints);
             iceBergHull = this.generateHull(hullPoints);
             for (i = 0; i < iceBergHull.length; i++) {
                 this.indicesIceberg.push(iceBergHull[i][0], iceBergHull[i][1], iceBergHull[i][2]);

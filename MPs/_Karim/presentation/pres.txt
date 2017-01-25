@@ -1,0 +1,50 @@
+presenter projet
+	- choix -> generation glacier - je pensais etre banquise
+	- changer en icebergs
+	- je veux developer des niveau / scenes
+	- cadre de l'infographie -> no blender
+	-> technique
+		-> terrain: teleologique - imiter les mouvement de plaques tectonique puis ajouter un Rain Drop Algorithm
+					ontogenetic - utilisation d'un perlin noise mais le resultat du perlin est convertit en terrain
+		problème: on ne genere pas un plan;
+					on genère un "solide," une forme creuse
+
+		-> solution generer une coque
+			-> le faire a la main.. généré les triangles sur tout les points
+			-> convex hull -> rubber band analogy
+			-> alpha shape, a = 0 -> convex hull
+							a -> icecream analogy
+	- les icebergs:
+		10% au dessus, 90% en dessous
+		types: dome, pinnacle, wedge, dry-dock,blocky, tabular
+		choisit le type blocky -> plus simple, plus connue
+	-> les phases:
+		-> definition de la generation procedural
+				->	La modélisation procédurale est un terme générique pour un certain nombre de techniques 
+				— utilisé en infographie — pour créer des modèles 3D et des textures à partir d'ensembles de règles.
+		-> definir les lois
+			-> créé un facteur limitant
+				-> coeur = 40-60% of maximum
+				-> maximum
+			-> plane1 = {((80 - 90%) * height)/2}
+			-> height = default = Math.rand()*10 +10
+			-> plane2 = plane1*{(110 - 250%))}
+			-> D = 10*height -> changed it because asked, and visually misleading
+								not looking at volume -> 7*height
+			-> H = (0.9)*D
+			-> plane3 = plane2*{(110 - 250%)}
+			-> h1 = H * (50-90%)
+			-> plane4 = plane3*{(60-90%)}
+					
+		-> generer les points aleatoirement
+			-> decouper les facteurs limitant en triangles
+				random point on triangle drawing, vector, random point
+		
+		-> generer la coque
+		-> generer les textures
+			-> difficile car chaque triangle aura une forme inconnue
+				-> opté pour des points aleatoire sur la textures
+					-> marche bien pour alpha shape (car selon a on a pleins de petit triangles) CHull pas terrible
+		
+		-> démo interactions
+		

@@ -33,7 +33,6 @@ window.onkeydown = function (e) {
 
 function updateUserInput(id, value) {
     userinput[id] = value;
-    console.log(id, value);
 }
 
 function ViewWireframe() {
@@ -152,7 +151,6 @@ function updateIcebergs(id) {
         return
     }
     else {
-        console.log(id, userinput['x'], userinput['y'], userinput['h'], userinput['a'], userinput['pts']);
         icebergs.push(
             new BlockyIceberg(Number(userinput['x']),
                               Number(userinput['y']),
