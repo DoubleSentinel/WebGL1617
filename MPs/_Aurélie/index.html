@@ -43,6 +43,40 @@
             gl_FragColor = color+color2;
         }
     </script>
+
+    <script>
+
+          /***************************************************************************************************************
+           *      shader for the RenderTexture      *
+           **************************************************************************************************************/
+      </script>
+      <script id="shader-vs-Render" type="x-shader/x-vertex">
+          attribute vec3 aVertexPosition;
+          attribute vec2 textCoord;
+          uniform mat4 uMVMatrix;
+          uniform mat4 uPMatrix;
+          varying vec2 vTexCoord;
+          void main(void) {
+            vTexCoord = textCoord;
+            gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+          }
+
+      </script>
+      <script id="shader-fs-Render" type="x-shader/x-fragment">
+         #ifdef GL_ES
+            precision highp float;
+          #endif
+          uniform sampler2D uSampler;
+          varying vec2 vTexCoord;
+
+          void main(void) {
+              vec4 color = texture2D(uSampler, vTexCoord);
+              gl_FragColor = color;
+          }
+
+      </script>
+
+
     <!--WebGL logique-->
     <script>
     //Texture from the book
@@ -53,6 +87,13 @@
 
     var textureSize = 128;
 
+    var rttFrameBuffer = null;
+    var rttTexture = null;
+
+    // parametre pour la gestion des multi programme contenant les shader
+      var progList = [];
+      var ptr = new Object();
+
     var vertexBuffer = null;
     var indexBuffer = null;
     var colorBuffer = null;
@@ -62,17 +103,48 @@
     var mvMatrix = mat4.create();
     var pMatrix = mat4.create();
 
-    function initShaderParameters(prg){
-      prg.vertexPositionAttribute = glContext.getAttribLocation(prg, "aVertexPosition");
-      glContext.enableVertexAttribArray(prg.vertexPositionAttribute);
-    //  prg.colorAttribute = glContext.getAttribLocation(prg, "aColor");
-      prg.textureCoordsAttribute  = glContext.getAttribLocation(prg, "aTextureCoord");
-      glContext.enableVertexAttribArray(prg.textureCoordsAttribute);
+    function initShaders(){
+      //Shaders de traitement
+      var vertexShader = getTextContent("shader-vs");
+      var fragmentShader = getTextContent("shader-fs");
+      progList[0] = createProgram(glContext, vertexShader, fragmentShader);
+      /*******************************************
+      * Inits the shader for the rendering
+      *******************************************/
+      var vertexShaderSceneRender = getTextContent("shader-vs-Render");
+      var fragmentShaderSceneRender = getTextContent("shader-fs-Render");
+      progList[1] = createProgram(glContext, vertexShaderSceneRender, fragmentShaderSceneRender);
 
-      prg.pMatrixUniform          = glContext.getUniformLocation(prg, 'uPMatrix');
-      prg.mvMatrixUniform         = glContext.getUniformLocation(prg, 'uMVMatrix');
-      prg.uColorTexture 			= glContext.getUniformLocation(prg, "uColorTexture");
-      prg.uColorTexture2 			= glContext.getUniformLocation(prg, "uColorTexture2");
+      initShaderParameters();
+
+      //We define the planet progam as the current program
+      glContext.useProgram(progList[0]);
+    }
+
+    function initShaderParameters(){
+      ptr.vertexPositionAttribute = glContext.getAttribLocation(progList[0], "aVertexPosition");
+      glContext.enableVertexAttribArray(ptr.vertexPositionAttribute);
+    //  prg.colorAttribute = glContext.getAttribLocation(prg, "aColor");
+      ptr.textureCoordsAttribute  = glContext.getAttribLocation(progList[0], "aTextureCoord");
+      glContext.enableVertexAttribArray(ptr.textureCoordsAttribute);
+
+      ptr.pMatrixUniform          = glContext.getUniformLocation(progList[0], 'uPMatrix');
+      ptr.mvMatrixUniform         = glContext.getUniformLocation(progList[0], 'uMVMatrix');
+      ptr.uColorTexture 			= glContext.getUniformLocation(progList[0], "uColorTexture");
+      ptr.uColorTexture2 			= glContext.getUniformLocation(progList[0], "uColorTexture2");
+
+      /*******************************************
+      * Inits the pointers for the rendering programme
+      *******************************************/
+      ptr.vertexPositionAttributeRender = glContext.getAttribLocation(progList[1], "aVertexPosition");
+      glContext.enableVertexAttribArray(ptr.vertexPositionAttributeRender);
+
+      ptr.textureCoordsAttributeRender = glContext.getAttribLocation(progList[1], "aTextureCoord");
+      glContext.enableVertexAttribArray(ptr.textureCoordsAttributeRender);
+
+      ptr.pMatrixUniformRender = glContext.getUniformLocation(progList[1], 'uPMatrix');
+      ptr.mvMatrixUniformRender = glContext.getUniformLocation(progList[1], 'uMVMatrix');
+      ptr.samplerUniformRender = glContext.getUniformLocation(progList[1], "uSampler");
     }
 
     function initBuffers(){
@@ -103,6 +175,46 @@
       texColorTab = getArrayBufferWithArray(textCoords);
     }
 
+    //Conversion int to RGBA from : http://www.vizitsolutions.com/portfolio/webgl/gpgpu/speedBumps.html
+  /*  function convertToRGBA(value){
+      var sign;
+      sign = step(0, -value);
+      value = abs(value);
+
+      var exponent;
+      //floor arrondi les nombres à l'entier le plus proche
+      exponent = floor(log2(value));
+
+      var mantissa;
+      mantissa = value*pow(2, -exponent)-1;
+
+      exponent = exponent+127;
+
+      vec4 result = vec4(0,0,0,0);
+      result.r = 128*sign + floor(exponent/2);
+      result.g = (exponent - floor(exponent/2)*2)*128 + floor(mantissa*128);
+      result.b = floor((mantissa-floor(mantissa*128)/128)*32768);
+//Et a?
+
+    }
+
+//From : http://www.vizitsolutions.com/portfolio/webgl/gpgpu/speedBumps.html
+   function convertToInt(texel){
+      var sign;
+      sign = -step(128, texel.a);
+      texel.a += 128*sign;
+
+      var exponent;
+      exponent = step(128, texel.b);
+      texel.b -= exponent*128;
+      exponent +=2*texel.a-127;
+
+      var mantissa;
+      matissa = texel.b*65536 + texel.g*256 + texel.r;
+
+      var value;
+      value = sign * exp2(exponent)*(1+mantissa*exp2(-23));
+    }*/
 //Pris de la fonction createImageFromTexture de cyril
       function readFromTexture(gl, canvas, texture){
         var canvas = document.getElementById(canvas);
@@ -129,26 +241,27 @@
         context.putImageData(imageData,0,0);
       }
 
-    /*  function initTextureFramebuffer() {
-      	var fb = glContext.createFramebuffer();
-        glContext.bindFramebuffer(glContext.FRAMEBUFFER, fb);
-        fb.width = textureSize;
-        fb.height = textureSize;
-        rttTexture[0] = glContext.createTexture();//A voir
-        glContext.bindTexture(glContext.TEXTURE_2D, rttTexture[0]);
-        glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
-				glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.NEAREST);
-        glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, fb.width, fb.height, 0, glContext.RGBA, glContext.UNSIGNED_BYTE, null);
+      function initTextureFramebuffer() {
+      	rttFrameBuffer = glContext.createFramebuffer();
+        glContext.bindFramebuffer(glContext.FRAMEBUFFER, rttFrameBuffer);
+        rttFrameBuffer.width = textureSize;
+        rttFrameBuffer.height = textureSize;
+        rttTexture = glContext.createTexture();//A voir
+        glContext.bindTexture(glContext.TEXTURE_2D, rttTexture);
+        glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.LINEAR);
+        glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.LINEAR_MIPMAP_NEAREST);
+
+        glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, rttFrameBuffer.width, rttFrameBuffer.height, 0, glContext.RGBA, glContext.UNSIGNED_BYTE, null);
         var renderbuffer = glContext.createRenderbuffer();
         glContext.bindRenderbuffer(glContext.RENDERBUFFER, renderbuffer);
-        glContext.renderbufferStorage(glContext.RENDERBUFFER, glContext.DEPTH_COMPONENT16, fb.width, fb.height);
-        glContext.framebufferTexture2D(glContext.FRAMEBUFFER, glContext.COLOR_ATTACHMENT0, glContext.TEXTURE_2D, rttTexture[0], 0);
+        glContext.renderbufferStorage(glContext.RENDERBUFFER, glContext.DEPTH_COMPONENT16, rttFrameBuffer.width, rttFrameBuffer.height);
+        glContext.framebufferTexture2D(glContext.FRAMEBUFFER, glContext.COLOR_ATTACHMENT0, glContext.TEXTURE_2D,rttTexture , 0);
         glContext.framebufferRenderbuffer(glContext.FRAMEBUFFER, glContext.DEPTH_ATTACHMENT, glContext.RENDERBUFFER, renderbuffer);
 
         glContext.bindTexture(glContext.TEXTURE_2D, null);
         glContext.bindRenderbuffer(glContext.RENDERBUFFER, null);
         glContext.bindFramebuffer(glContext.FRAMEBUFFER, null);//Unbind texture
-      }*/
+      }
 
       function createBaseTexture(){//Dessiner sur la canvas et le passer en texture Donc c'est là qu'il faudra venir avec les matrices
           textureA = glContext.createTexture();
@@ -184,56 +297,102 @@
 
       function drawScene(){//est appelée dans renderLoop() dans les webglTools
         //glContext.clearColor(0.0,0.0,0.0,1.0);
+
+        glContext.useProgram(progList[0]);
+
+        glContext.bindFramebuffer(glContext.FRAMEBUFFER, rttFrameBuffer);
+
         glContext.enable(glContext.DEPTH_TEST);
         glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
-        glContext.viewport(0,0,c_width,c_height);
+        glContext.viewport(0,0, textureSize, textureSize);
         mat4.identity(pMatrix);
         mat4.identity(mvMatrix);
-        glContext.uniformMatrix4fv(prg.pMatrixUniform, false, pMatrix);
-        glContext.uniformMatrix4fv(prg.mvMatrixUniform, false, mvMatrix);
+        glContext.uniformMatrix4fv(ptr.pMatrixUniform, false, pMatrix);
+        glContext.uniformMatrix4fv(ptr.mvMatrixUniform, false, mvMatrix);
 
         glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, indexBuffer);
 
         glContext.activeTexture(glContext.TEXTURE0);
-        glContext.bindTexture(glContext.TEXTURE_2D, textureA);//ici on doit passer le nom de la texture créée, qu'on veut dessiner dans la scène, donc celle du résultat plutôt.
-        //Ou plutôt balancer les deux textures pour faire les calculs dans le fragment sharder ?
-        glContext.uniform1i(prg.uColorTexture, 0);//Lien pour transmettre la texture au fragment shade
+        glContext.bindTexture(glContext.TEXTURE_2D, textureA);
+        glContext.uniform1i(ptr.uColorTexture, 0);//Lien pour transmettre la texture au fragment shade
 
         glContext.activeTexture(glContext.TEXTURE1);
         glContext.bindTexture(glContext.TEXTURE_2D, textureB);
-        glContext.uniform1i(prg.uColorTexture2, 1);
+        glContext.uniform1i(ptr.uColorTexture2, 1);
 
 
         glContext.bindBuffer(glContext.ARRAY_BUFFER, vertexBuffer);
-        glContext.vertexAttribPointer(prg.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
+        glContext.vertexAttribPointer(ptr.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
 
       //  glContext.bindBuffer(glContext.ARRAY_BUFFER, colorBuffer);
       //  glContext.vertexAttribPointer(prg.colorAttribute,4, glContext.FLOAT, false, 0, 0);
 
         glContext.bindBuffer(glContext.ARRAY_BUFFER, texColorTab);
-        glContext.vertexAttribPointer(prg.textureCoordsAttribute, 2, glContext.FLOAT, false, 0, 0);
+        glContext.vertexAttribPointer(ptr.textureCoordsAttribute, 2, glContext.FLOAT, false, 0, 0);
 
         //console.log(indices.length);
 
         glContext.drawElements(glContext.TRIANGLE_STRIP, indices.length, glContext.UNSIGNED_SHORT, 0);
 
+        glContext.bindTexture(glContext.TEXTURE_2D, rttTexture);
+        glContext.generateMipmap(glContext.TEXTURE_2D);
+        glContext.bindTexture(glContext.TEXTURE_2D, null);
+
+          // mis en place du buffer frame
+          glContext.bindFramebuffer(glContext.FRAMEBUFFER, null);
+
         readFromTexture(glContext,"canvas2", textureA);
         readFromTexture(glContext, "canvas3", textureB);
+        readFromTexture(glContext,"canvas4",rttTexture);
+
+        /*
+        * Render shader
+        */
+        glContext.useProgram(progList[1]);
+
+        glContext.enable(glContext.DEPTH_TEST);
+        glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
+        glContext.viewport(0,0,textureSize,textureSize);
+        mat4.identity(pMatrix);
+        mat4.identity(mvMatrix);
+        glContext.uniformMatrix4fv(ptr.pMatrixUniformRender, false, pMatrix);
+        glContext.uniformMatrix4fv(ptr.mvMatrixUniformRender, false, mvMatrix);
+
+        glContext.bindBuffer(glContext.ELEMENT_ARRAY_BUFFER, indexBuffer);
+
+        glContext.activeTexture(glContext.TEXTURE0);
+        glContext.bindTexture(glContext.TEXTURE_2D, rttTexture);
+        glContext.uniform1i(ptr.samplerUniformRender, 0);
+
+
+        glContext.bindBuffer(glContext.ARRAY_BUFFER, vertexBuffer);
+        glContext.vertexAttribPointer(ptr.vertexPositionAttributeRender, 3, glContext.FLOAT, false, 0, 0);
+
+      //  glContext.bindBuffer(glContext.ARRAY_BUFFER, colorBuffer);
+      //  glContext.vertexAttribPointer(prg.colorAttribute,4, glContext.FLOAT, false, 0, 0);
+
+        glContext.bindBuffer(glContext.ARRAY_BUFFER, texColorTab);
+        glContext.vertexAttribPointer(ptr.textureCoordsAttributeRender, 2, glContext.FLOAT, false, 0, 0);
+
+        glContext.drawElements(glContext.TRIANGLE_STRIP, indices.length, glContext.UNSIGNED_SHORT, 0);
+
+
       }
 
       function initWebGL(){
         glContext = getGLContext('webgl-canvas');
         console.log("glContext "+glContext);
         var float_texture = glContext.getExtension('OES_texture_float');//active l'extension
-        initProgram();
-        console.log("initProgram");
+        //initProgram();
+        initShaders();
+        console.log("initShaders");
         //prg = glContext.createProgram();
         initBuffers();
         console.log("initBuffers");
         createBaseTexture();
         console.log("createBaseTexture "+textureA);
-      //  initTextureFramebuffer();
-      //  console.log("initTextureFramebuffer");
+        initTextureFramebuffer();
+        console.log("initTextureFramebuffer");
         renderLoop();
       }
     </script>
@@ -260,6 +419,9 @@
     HTML5 is not supported
   </canvas>
   <canvas id="canvas3" width="128" height="128">
+    HTML5 is not supported
+  </canvas>
+  <canvas id="canvas4" width="128" height="128">
     HTML5 is not supported
   </canvas>
   <script>

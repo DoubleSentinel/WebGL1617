@@ -1,7 +1,7 @@
 var glContext = null;
 var c_width = 0;
 var c_height = 0;
-var prg = null; 
+var prg = null;
 
 function degToRad(degrees) {
     return (degrees * Math.PI / 180.0);
@@ -44,6 +44,19 @@ function getShader(gl, id) {
     return shader;
 }
 
+function getTextContent( elementID ) {
+    var element = document.getElementById(elementID);
+    var fsource = "";
+    var node = element.firstChild;
+    var str = "";
+    while (node) {
+        if (node.nodeType == 3) // this is a text node
+            str += node.textContent;
+        node = node.nextSibling;
+    }
+    return str;
+}
+
 /**
  * The program contains a series of instructions that tell the Graphic Processing Unit (GPU)
  * what to do with every vertex and fragment that we transmit.
@@ -66,6 +79,29 @@ function initProgram() {
 
     initShaderParameters(prg);
 
+}
+
+function createProgram(gl, vertexShaderSource, fragmentShaderSource) {
+    var vsh = gl.createShader( gl.VERTEX_SHADER );
+    gl.shaderSource(vsh,vertexShaderSource);
+    gl.compileShader(vsh);
+    if ( ! gl.getShaderParameter(vsh, gl.COMPILE_STATUS) ) {
+        console.log("Error in vertex shader:  " + gl.getShaderInfoLog(vsh));
+    }
+    var fsh = gl.createShader( gl.FRAGMENT_SHADER );
+    gl.shaderSource(fsh, fragmentShaderSource);
+    gl.compileShader(fsh);
+    if ( ! gl.getShaderParameter(fsh, gl.COMPILE_STATUS) ) {
+        console.log("Error in fragment shader:  " + gl.getShaderInfoLog(fsh));
+    }
+    var prog = gl.createProgram();
+    gl.attachShader(prog,vsh);
+    gl.attachShader(prog, fsh);
+    gl.linkProgram(prog);
+    if ( ! gl.getProgramParameter( prog, gl.LINK_STATUS) ) {
+        console.log("Link error in program:  " + gl.getProgramInfoLog(prog));
+    }
+    return prog;
 }
 
 function requestAnimFrame(o) {
@@ -122,7 +158,7 @@ function getGLContext(canvasName) {
             //gl = canvas.getContext(names[i], {premultipliedAlpha: false});
             //gl.enable(gl.BLEND);
             //gl.blendEquation(gl.FUNC_ADD);
-            //gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);			
+            //gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
         } catch (e) {}
 
         if (gl) break;
