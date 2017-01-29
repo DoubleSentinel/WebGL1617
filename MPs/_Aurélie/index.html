@@ -85,6 +85,11 @@
     var textureA;
     var textureB;
 
+    var matrixA;
+    var matrixB;
+
+    var result = [0,0,0,0];
+
     var textureSize = 128;
 
     var rttFrameBuffer = null;
@@ -176,25 +181,43 @@
     }
 
     //Conversion int to RGBA from : http://www.vizitsolutions.com/portfolio/webgl/gpgpu/speedBumps.html
-  /*  function convertToRGBA(value){
+    //Je ne sais pas si ces fonctions fonctionnent
+    function convertToRGBA(value){
       var sign;
-      sign = step(0, -value);
-      value = abs(value);
+    //  sign = step(0, -value);
+    if(-value < 0){
+      sign = 0;
+    }
+    else{
+      sign = 1;
+    }
+      value = Math.abs(value);
 
       var exponent;
       //floor arrondi les nombres à l'entier le plus proche
-      exponent = floor(log2(value));
+      exponent = Math.floor(Math.log2(value));
 
       var mantissa;
-      mantissa = value*pow(2, -exponent)-1;
+      mantissa = value*Math.pow(2, -exponent)-1;
 
       exponent = exponent+127;
 
-      vec4 result = vec4(0,0,0,0);
-      result.r = 128*sign + floor(exponent/2);
+      //var result = vec4(0,0,0,0);
+    /*  result.r = 128*sign + floor(exponent/2);
       result.g = (exponent - floor(exponent/2)*2)*128 + floor(mantissa*128);
-      result.b = floor((mantissa-floor(mantissa*128)/128)*32768);
-//Et a?
+      result.b = floor((mantissa-floor(mantissa*128)/128)*32768);*/
+      result.a = Math.floor(exponent/2);
+      exponent = exponent - result.a*2;
+      result.a = result.a + 128*sign;
+
+      result.b = Math.floor(mantissa * 128);
+      mantissa = mantissa - result.b/128;
+      result.b = result.b + exponent*128;
+
+      result.g = Math.floor(mantissa*32768);
+      mantissa = mantissa - result.g/32768;
+
+      result.r = Math.floor(mantissa*8388608);
 
     }
 
@@ -210,11 +233,13 @@
       exponent +=2*texel.a-127;
 
       var mantissa;
-      matissa = texel.b*65536 + texel.g*256 + texel.r;
+      mantissa = texel.b*65536 + texel.g*256 + texel.r;
 
       var value;
       value = sign * exp2(exponent)*(1+mantissa*exp2(-23));
-    }*/
+    }
+
+
 //Pris de la fonction createImageFromTexture de cyril
       function readFromTexture(gl, canvas, texture){
         var canvas = document.getElementById(canvas);
@@ -263,14 +288,22 @@
         glContext.bindFramebuffer(glContext.FRAMEBUFFER, null);//Unbind texture
       }
 
-      function createBaseTexture(){//Dessiner sur la canvas et le passer en texture Donc c'est là qu'il faudra venir avec les matrices
+      function createBaseTexture(matrixA, matrixB){//Dessiner sur la canvas et le passer en texture Donc c'est là qu'il faudra venir avec les matrices
           textureA = glContext.createTexture();
            var c = document.createElement("canvas");
            c.width = 128;
            c.height = 128;
            var ctx = c.getContext("2d");
-           ctx.fillStyle="#FF0000";
-           ctx.fillRect(0,0,c.width, c.height);
+
+           for(var i = 0; i< matrixA.dim; i++){
+             for(var j = 0; j<matrixA.dim; j++){
+               ctx.fillStyle=convertToRGBA(matrixA.rows[i][j]);
+               ctx.fillRect(i,j,1,1);//Pour avoir un pixel
+             }
+           }
+           //ctx.fillStyle="#FF0000";
+           //ctx.fillRect(0,0,c.width, c.height);//Rect 1px(height) -> dessine sur un pixel
+
            glContext.bindTexture(glContext.TEXTURE_2D, textureA);
            glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, glContext.RGBA, glContext.UNSIGNED_BYTE, c);
            glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
@@ -284,8 +317,15 @@
            d.width = 128;
            d.height = 128;
            var ctxD = d.getContext("2d");
-           ctxD.fillStyle="#00FF00";
-           ctxD.fillRect(0,0,d.width, d.height);
+
+           for(var k=0; k<matrixB.dim; k++){
+             for(var l=0; l<matrixB.dim; l++){
+               ctxD.fillStyle=convertToRGBA(matrixB.rows[k][l])
+               ctxD.fillRect(k,l,1,1);
+             }
+           }
+           //ctxD.fillStyle="#00FF00";
+           //ctxD.fillRect(0,0,d.width, d.height);
            glContext.bindTexture(glContext.TEXTURE_2D, textureB);
            glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, glContext.RGBA, glContext.UNSIGNED_BYTE, d);
            glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
@@ -314,7 +354,7 @@
 
         glContext.activeTexture(glContext.TEXTURE0);
         glContext.bindTexture(glContext.TEXTURE_2D, textureA);
-        glContext.uniform1i(ptr.uColorTexture, 0);//Lien pour transmettre la texture au fragment shade
+        glContext.uniform1i(ptr.uColorTexture, 0);//Lien pour transmettre la texture au fragment shader
 
         glContext.activeTexture(glContext.TEXTURE1);
         glContext.bindTexture(glContext.TEXTURE_2D, textureB);
@@ -389,7 +429,7 @@
         //prg = glContext.createProgram();
         initBuffers();
         console.log("initBuffers");
-        createBaseTexture();
+        createBaseTexture(matrixA, matrixB);
         console.log("createBaseTexture "+textureA);
         initTextureFramebuffer();
         console.log("initTextureFramebuffer");
@@ -397,8 +437,9 @@
       }
     </script>
 </head>
-<body onload="initWebGL()">
-  <h2>Entrer un fichier JSON contenant une matrice</h2>
+<body>
+  <h1>Calcul matriciel</h1>
+  <h3>Entrer un fichier JSON contenant une matrice</h3>
   <input type="file" id="fileJson" name="files[]" accept=".json"/>
   <h3>Voici les deux matrices entrées</h3>
   <h4>Matrice A</h4>
@@ -407,6 +448,8 @@
   <h4>Matrice B</h4>
   <table id="matrixBTable">
   </table>
+  <br/>
+  <input type="button" id="calculate" onclick="initWebGL()" value="Calculer"/>
   <br/>
   <h2>Résultat</h2>
   <table id="resultTable">
@@ -426,6 +469,7 @@
   </canvas>
   <script>
   document.getElementById("fileJson").addEventListener("change",changeFileJson,false);
+
     //Récupération du fichier.
     function changeFileJson(evt){
       var file = evt.target.files[0];
@@ -462,7 +506,7 @@
           }
         }
         console.log("Matrices construites");
-      //  matrixA.display('matrixATable');
+        //matrixA.display('matrixATable');
         //console.log("matrixB");
         //matrixB.display('matrixBTable');
         //console.log("Matrices affichées");
