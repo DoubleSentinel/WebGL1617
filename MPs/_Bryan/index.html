@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8" />
+        <title id="titre">Muzaliser</title>
+        <!-- Bootstrap
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-MfvZlkHCEqatNoGiOXveE8FIwMzZg4W85qfrfIFBfYc= sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">-->
+
+        <!-- END Bootstrap -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/stylesheet.css">
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.1/css/bootstrap-slider.css">
+        <script src="ex/js/commonFunctions.js"></script>
+    		<script src='ex/js/gl-matrix-min.js'></script>
+    		<script src='ex/js/webglTools.js'></script>
+        <script src='js/tools.js'></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/9.7.1/bootstrap-slider.js"></script>
+        <script src="animation1.js"></script>
+        <script src="animation2.js"></script>
+        <script src="animation3.js"></script>
+        <style>
+          body, html{min-height: 100%; height: 100%; overflow: hidden;}
+          .full-height{height: 100%;}
+          #ex1Slider .slider-selection {
+          	background: #BABABA;
+          }
+          .slider.slider-horizontal{
+            width:100%;
+          }
+        </style>
+
+        <script id="shader-vs-animation1" type="x-shader/x-vertex">
+          attribute vec3 aVertexPosition;
+          attribute vec4 aColor;
+          uniform mat4 uMVMatrix;
+          uniform mat4 uPMatrix;
+          varying vec4 vColor;
+          varying vec3 vPos;
+          void main(void) {
+              gl_PointSize = 5.0;
+              vColor = aColor;
+              gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+              vPos = aVertexPosition;
+          }
+        </script>
+
+        <!--*********** VERTEX SHADER ANIMATION 2 **************-->
+        <script id="shader-vs-animation2" type="x-shader/x-vertex">
+    			attribute vec3 aVertexPosition;
+    			attribute vec4 aColor;
+    			attribute float aRadius;
+    			attribute float aCenterX;
+    			attribute float aCenterY;
+    			attribute float aOpacity;
+    			attribute float aBorder;
+    		    uniform mat4 uMVMatrix;
+    		    uniform mat4 uPMatrix;
+    			varying vec4 vColor;
+    			varying vec3 vPosition;
+    			varying float vRadius;
+    			varying float vCenterX;
+    			varying float vCenterY;
+    			varying float vOpacity;
+    			varying float vBorder;
+    		    void main(void) {
+
+    				gl_Position = uPMatrix * uMVMatrix * vec4(vec3(aVertexPosition.x, aVertexPosition.y, aVertexPosition.z + (aOpacity * 0.1)), 1.0);
+    				vColor = aColor;
+    				vPosition = aVertexPosition;
+    				vRadius = aRadius;
+    				vCenterX = aCenterX;
+    				vCenterY = aCenterY;
+    				vOpacity = aOpacity;
+    				vBorder = aBorder;
+    			}
+    		</script>
+
+        <script id="shader-vs-animation3" type="x-shader/x-vertex">
+      attribute vec3 aVertexPosition;
+			attribute vec4 aColor;
+			uniform mat4 uMVMatrix;
+			uniform mat4 uPMatrix;
+			varying vec4 vColor;
+			void main(void) {
+				vColor = aColor;
+				gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+			}
+        </script>
+
+        <!--*********** FRAGMENT SHADER ANIMATION 1 **************-->
+    		<script id="shader-fs-animation1" type="x-shader/x-fragment">
+          #ifdef GL_ES
+              precision highp float;
+          #endif
+          varying vec4 vColor;
+          varying vec3 vPos;
+          void main(void) {
+              //gl_FragColor = vColor;
+              float increment = vPos.z/2.0;
+              //gl_FragColor = vec4(vColor.r + increment,vColor.b + increment,vColor.g + increment,vColor.a);
+              gl_FragColor = vec4(
+                  vColor.r - ((1.0 - vColor.r)/2.0)*vPos.z,
+                  vColor.g - ((1.0 - vColor.g)/2.0)*vPos.z,
+                  vColor.b - ((1.0 - vColor.b)/2.0)*vPos.z,
+                  vColor.a);
+          }
+    		</script>
+
+        <!--*********** FRAGMENT SHADER ANIMATION 2 **************-->
+        <script id="shader-fs-animation2" type="x-shader/x-fragment">
+    			#ifdef GL_ES
+    				precision highp float;
+    			#endif
+    			varying vec3 vPosition;
+    			varying vec4 vColor;
+    			varying float vRadius;
+    			varying float vCenterX;
+    			varying float vCenterY;
+    			varying float vOpacity;
+    			varying float vBorder;
+    			void main(void) {
+    				float half_pi = 1.5708;
+    				float dist = sqrt(pow(vPosition.x - vCenterX, 2.0) + pow(vPosition.y - vCenterY, 2.0)) / vRadius;
+    				vec4 finalColor = vec4 (0.0, 0.0, 0.0, 0.0);
+    				if (dist <= 1.0 && dist >= vBorder){
+    					float intensity = sin(((dist - vBorder)/(1.0 - vBorder))*(half_pi*2.0));
+    					vec3 ambientColor = vColor.xyz;
+    					finalColor = vec4(ambientColor, intensity * intensity *  vOpacity);
+
+              gl_FragColor = finalColor;
+
+    				}
+    			}
+    		</script>
+
+        <!-- fragment shader -->
+        <script id="shader-fs-animation3" type="x-shader/x-fragment">
+    			#ifdef GL_ES
+    				precision highp float;
+    			#endif
+    				varying vec4 vColor;
+    				void main(void) {
+              if(vColor != vec4(1.0, 1.0, 1.0, 1.0)){
+                  gl_FragColor = vColor;
+              }
+    				}
+        </script>
+
+        <script>
+            var render = false;
+            var prg = null;
+            var animation = new Object();
+
+            animation = anim1;
+
+            var vertexBuffer = null;
+            var indexBuffer = null;
+            var colorBuffer = null;
+            var indices = [];
+            var vertices = [];
+            var colors = [];
+            //Tableau servant de liste d'attente
+
+            var rotY = 0;
+            var rotX = 0;
+            var circles = [];
+            var beforeAmp = 0.00;
+            //On choisi si on veut de la perspective ou non
+            var perspective = true;
+
+      			var border = 0.975;
+
+            //Couleur de base :
+            var red = 0.96;
+            var green = 0.496;
+            var blue = 0.184;
+            //Couleur destination :
+            var redDest = 0.96;
+            var greenDest = 0.496;
+            var blue = 0.184;
+            //Pas couleur
+            var pasRed = 0.0;
+            var pasGreen = 0.0;
+            var pasBlue = 0.0;
+
+            var mvMatrix = mat4.create();
+            var pMatrix = mat4.create();
+            var frequencyData = [];
+            var nb = 0;
+
+            const MAX_VALUE = 255;
+            const MIN_VALUE = 0;
+
+            //const NB_FREQUENCIES = 1024;
+            const NB_FREQUENCIES = 660;
+            const NB_ROWS = 30;
+            const NB_ITERATION_FOR_COLOR_CHANGING = 300;
+            const INVERSE_NB_ITERATION_FOR_COLOR_CHANGING = 1/NB_ITERATION_FOR_COLOR_CHANGING;
+
+            window.onkeydown = checkKey;
+            //On regarde pour la rotation
+            function checkKey(ev){
+                //Pour garder la compatibilité IE...
+                var key = ev.which || ev.keyCode;
+                switch(key)
+                {
+                    case 65:{
+                        rotY -= 2.0;
+                        break;
+                    }
+                    case 68:{
+                        rotY += 2.0;
+                        break;
+                    }
+                    case 87:{
+                        rotX -= 2.0;
+                        break;
+                    }
+                    case 83:{
+                        rotX += 2.0;
+                        break;
+                    }
+                    default:
+                    break;
+                }
+                animation.initBuffers();
+            }
+
+            function initShaders(){
+            	//Selection of the 2 shader texts for the skybox
+            	var vertexShaderAnimation = getTextContent(animation.vertexName);
+            	var fragmentShaderAnimation = getTextContent(animation.fragmentName);
+            	//Create the program for the shader
+            	progAnimation = createProgram(glContext,vertexShaderAnimation,fragmentShaderAnimation);
+            	glContext.useProgram(progAnimation);
+              animation.initShaderParameters(progAnimation);
+              prg = progAnimation;
+            }
+
+            function modifyColor()
+            {
+                if(equals(red,redDest,0.000001))
+                {
+                    redDest = Math.random();
+                    greenDest = Math.random();
+                    blueDest = Math.random();
+
+                    pasRed = (redDest - red) * INVERSE_NB_ITERATION_FOR_COLOR_CHANGING;
+                    pasGreen = (greenDest - green) * INVERSE_NB_ITERATION_FOR_COLOR_CHANGING;
+                    pasBlue = (blueDest - blue) * INVERSE_NB_ITERATION_FOR_COLOR_CHANGING;
+                }
+                red += pasRed;
+                blue += pasBlue;
+                green += pasGreen;
+            }
+
+            function equals(nb1, nb2, epsilon)
+            {
+                return (Math.abs(nb1 - nb2) < epsilon);
+            }
+
+            function degToRad(degrees)
+            {
+                return( degrees * Math.PI / 180.0 );
+            }
+
+            function drawScene()
+            {
+              animation.drawScene();
+            }
+
+            function initWebGL()
+            {
+                glContext = getGLContext('webgl-canvas');
+                // Ces 2 lignes permetent d'avoir la bonne grandeur pour le canvas, mais ça lag.
+                glContext.canvas.width = document.getElementById("gl-container").offsetWidth;
+  	            glContext.canvas.height = document.getElementById("gl-container").offsetHeight;
+                initShaders();
+                animation.initBuffers();
+                if(!render){
+                    renderLoop();
+                    render = true;
+                }
+            }
+        </script>
+    </head>
+    <body onload="initWebGL()">
+    <div class="container-fluid full-height">
+      <div class="col-sm-2 full-height" style="padding-right:30px;">
+        <div class="row">
+          <h1>Musalizer v2</h1>
+          <hr/>
+        </div>
+        <div class="row" id="choix_musique">
+          <h3>Choix musique</h3>
+          <label for="audio_file">Depuis votre ordinateur</label>
+          <input class="form-control" id="audio_file" type="file" accept="audio/*" onchange="startMusic(this.files)" />
+          <label for="sample">Sample de base</label>
+          <button class="form-control btn btn-primary " onclick="loadSample()">Load Sample</buton>
+        </div>
+        <div class="row" id="musique" style="display:none;">
+          <h3>Musique</h3>
+          <div id="player-div" class="col-xs-12 col-md-12">
+          </div>
+          <button id="recommencer" class="form-control btn btn-danger" onclick="location.reload();">Recommencer</button>
+        </div>
+        <div class="row">
+          <h3>Choix visualisation</h3>
+          <select class="form-control" id="choix_visualisation">
+            <option value="anim1">Version 1</option>
+            <option value="anim2">Version 2</option>
+            <option value="anim3">Version 3</option>
+          </select>
+        </div>
+        <div class="row">
+          <h3>Configuration</h3>
+        </div>
+        <div id="configuration_anim1" class="configuration">
+          <div class="row">
+            <p>Rien n'à configurer !</p>
+          </div>
+        </div>
+        <div id="configuration_anim2" class="configuration" style="display:none;">
+        <div class="row">
+          <label>Rayon de base</label><br/>
+          <input id="rayon" data-slider-id='rayonSlider' type="text" data-slider-min="1" data-slider-max="10" data-slider-step="1" data-slider-value="5"/>
+        </div>
+        <div class="row">
+          <label>Vitesse</label><br/>
+          <input id="vitesse" data-slider-id='vitesseSlider' type="text" data-slider-min="1" data-slider-max="10" data-slider-step="1" data-slider-value="5"/>
+        </div>
+        <div class="row">
+          <label>Bordure du cercle</label><br/>
+          <input id="borderWidth" data-slider-id='borderWidthSlider' type="text" data-slider-min="1" data-slider-max="10" data-slider-step="1" data-slider-value="5"/>
+        </div>
+        <div class="row">
+          <label>Seuil minimum</label><br/>
+          <input id="minimalSeuil" data-slider-id='minimalSeuilSlider' type="text" data-slider-min="1" data-slider-max="10" data-slider-step="1" data-slider-value="5"/>
+        </div>
+        <div class="row">
+          <label>Seuil maximum</label><br/>
+          <input id="maximalSeuil" data-slider-id='maximalSeuilSlider' type="text" data-slider-min="11" data-slider-max="20" data-slider-step="1" data-slider-value="15"/>
+        </div>
+      </div>
+      <div id="configuration_anim3" class="configuration" style="display:none">
+        <div class="row">
+          <label>Nombre de côtés</label><br/>
+          <input id="nbCotes" data-slider-id='ex1Slider' type="text" data-slider-min="3" data-slider-max="12" data-slider-step="1" data-slider-value="3"/>
+        </div>
+        <div class="row">
+          <label>Rotation automatique : </label>
+          <input type="checkbox" id="rotationAutomatique">
+        </div>
+      </div>
+      </div>
+      <div class="col-sm-10 full-height" id="gl-container" style="padding:0px;">
+        <canvas id="webgl-canvas" width="700" height="700">
+          HTML5 is not supported
+        </canvas>
+      </div>
+    </div>
+
+        <script type="text/javascript">
+        $( "#choix_visualisation" ).change(function() {
+          animation = eval(""+this.value);
+          vertexBuffer = null;
+          indexBuffer = null;
+          colorBuffer = null;
+          indices = [];
+          vertices = [];
+          colors = [];
+          //Tableau servant de liste d'attente
+          anim1.verticesTemp = [];
+          anim1.colorsTemp = [];
+          anim1.rowsVertices = [];
+          anim1.rowsColors= [];
+          rotY = 0;
+          rotX = 0;
+          circles = [];
+          beforeAmp = 0.00;
+          initWebGL();
+          $('.configuration').hide();
+          $('#configuration_'+this.value).show();
+        });
+
+        $('#rayon').slider({
+        	formatter: function(value) {
+            anim2.rayon = value/100;
+        		return 'Rayon de base : ' + value;
+        	}
+        });
+        $('#vitesse').slider({
+        	formatter: function(value) {
+            anim2.deltaRadius = value/500;
+        		return 'Vitesse : ' + value;
+        	}
+        });
+        $('#borderWidth').slider({
+        	formatter: function(value) {
+            border = 1 - value/200;
+        		return 'Bordure : ' + value;
+        	}
+        });
+        $('#minimalSeuil').slider({
+        	formatter: function(value) {
+            anim2.minS = value;
+        		return 'Seuil minimal : ' + value;
+        	}
+        });
+        $('#maximalSeuil').slider({
+        	formatter: function(value) {
+            anim2.maxS = value;
+        		return 'Seuil maximal : ' + value;
+        	}
+        });
+        $('#nbCotes').slider({
+        	formatter: function(value) {
+            anim3.changeDivision(value);
+        		return 'Nbre de côtés: ' + value;
+        	}
+        });
+        $('#rotationAutomatique').change(function(){
+          if( $('#rotationAutomatique').is(':checked') ){
+              anim3.rotation = true;
+          }else{
+              anim3.rotation = false;
+          }
+        });
+
+        </script>
+        <script>
+            var canvas = document.getElementById('webgl-canvas');
+            var index = 0;
+            var largeurCarre = 4;
+            function updateCanvasSize(){
+              initWebGL();
+            }
+
+            function loadSample(){
+              startMusic();
+            }
+            //audio_file.onchange = startMusic(audio_file);
+
+            function startMusic(f)
+            {
+                $('#choix_musique').hide();
+                $('#musique').show();
+                //Source des deux lignes suivantes : http://stackoverflow.com/questions/26745292/canvas-toggle-filling-whole-page-removing-scrollbar
+                document.body.scrollTop = 0; // <-- pull the page back up to the top
+                //document.body.style.overflow = 'hidden'; // <-- relevant addition
+
+                //On retire les balises audio déjà présente
+                var audioDiv = document.getElementById("player-div");
+                while(audioDiv.firstChild)
+                {
+                    audioDiv.removeChild(audioDiv.firstChild);
+                }
+                if(f == null){
+                  var files = f;
+                  //var files = this.files;
+                  //On regarde si Window.URL existe, si ce n'est pas le cas, on utilie webkit
+                  //ça permet de savoir si on utilise Firefox ou Chrome/Chromium
+                  var file = './sample.mp3';
+                }else{
+                  var files = f;
+                  //var files = this.files;
+                  //On regarde si Window.URL existe, si ce n'est pas le cas, on utilie webkit
+                  //ça permet de savoir si on utilise Firefox ou Chrome/Chromium
+                  var file = (window.URL ? URL : webkitURL).createObjectURL(files[0]);
+                }
+
+                var audio = new Audio();
+                audio.src = file;
+                audio.id = 'player';
+                audio.controls = true;
+                audio.autoplay = true;
+                audioDiv.appendChild(audio);
+                var context = new AudioContext();
+
+                // Test stéréo
+                var memoireTampon = context.createBuffer(2, 22050, 44100);
+
+                var analyser = context.createAnalyser();
+                //analyser.fftSize = 2048;
+                analyser.fftSize = 2048;
+                //La "range" est de [0 , 255] dans le domaine N
+                frequencyData = new Uint8Array(analyser.frequencyBinCount);
+                // frequencyBinCount : orrespond en général au nombre de valeurs que vous aurez à manipuler pour la visualisation.
+
+                var source = context.createMediaElementSource(audio);
+                source.connect(analyser);
+                analyser.connect(context.destination);
+
+                $(audio).bind("ended",function(){
+                    location.reload();
+                });
+
+                // Méthode permettant de mettre à jour l'affichage
+                function renderFrame() {
+                    // Va appeler renderFrame en boucle
+                    requestAnimationFrame(renderFrame);
+                    // met à jour les données dans frequenCyData
+                    analyser.getByteFrequencyData(frequencyData);
+
+                    //getByteFrequencyData : copie les données de fréquence dans le Uint8Array passé en argument
+                    animation.initBuffers();
+                }
+                renderFrame();
+            };
+
+            window.onresize = function(event)
+            {
+                updateCanvasSize();
+            };
+
+        </script>
+        <script src="ex/js/mouseMotionHandling.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha256-Sk3nkD6mLTMOF0EOpNtsIry+s1CsaqQC1rVLTAy+0yc= sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+    </body>
+</html>
