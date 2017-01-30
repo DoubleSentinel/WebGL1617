@@ -79,6 +79,9 @@
 
     <!--WebGL logique-->
     <script>
+
+    //var color=[];
+
     //Texture from the book
     var texColorTab = new Array(); //stocke les textures
     var textCoords = [];
@@ -158,10 +161,10 @@
                    1.0, -1.0, 0.1,
                   -1.0,  1.0, 0.1,
                   -1.0,  -1.0, 0.1 ];*/
-      vertices.push(1.0, 1.0, 0.1);
-      vertices.push(1.0, -1.0, 0.1);
-      vertices.push(-1.0,  1.0, 0.1);
-      vertices.push(-1.0,  -1.0, 0.1);
+      vertices.push(-1.0, -1.0, 0.1);
+      vertices.push(-1.0, 1.0, 0.1);
+      vertices.push(1.0,  -1.0, 0.1);
+      vertices.push(1.0,  1.0, 0.1);
 
       colors.push(0.0, 0.0, 1.0, 1.0);
       colors.push(0.0, 0.0, 1.0, 1.0);
@@ -312,9 +315,28 @@
 
            for(var i = 0; i< matrixA.dim; i++){
              for(var j = 0; j<matrixA.dim; j++){
-               ctx.fillStyle="#00000"+ matrixA.rows[i][j].toString(16);
+               var value = matrixA.rows[i][j]
+               if(value < 16){
+                 ctx.fillStyle="#00000"+ value.toString(16);
+               }
+               else if(value < 256){
+                 ctx.fillStyle="#0000"+ value.toString(16);
+               }
+               else if(value <4096){
+                 ctx.fillStyle="#000"+ value.toString(16);
+               }
+               else if (value <65536){
+                 ctx.fillStyle="#00"+ value.toString(16);
+               }
+               else if(value < 1048476){
+                 ctx.fillStyle="#0"+ value.toString(16);
+               }
+               else{
+                 ctx.fillStyle="#"+ value.toString(16);
+               }
+
                ctx.fillRect(i,j,1,1);//Pour avoir un pixel
-               console.log(ctx.fillStyle);
+               //console.log(ctx.fillStyle);
              }
            }
            //ctx.fillStyle="#FF0000";
@@ -337,8 +359,26 @@
 
            for(var k=0; k<matrixB.dim; k++){
              for(var l=0; l<matrixB.dim; l++){
-               ctxD.fillStyle="#0000"+matrixB.rows[k][l].toString(16);
-               console.log(ctxD.fillStyle);
+               valueB = matrixB.rows[k][l];
+               if(valueB < 16){
+                 ctxD.fillStyle="#00000"+ valueB.toString(16);
+               }
+               else if(valueB < 256){
+                 ctxD.fillStyle="#0000"+ valueB.toString(16);
+               }
+               else if(valueB <4096){
+                 ctxD.fillStyle="#000"+ valueB.toString(16);
+               }
+               else if (valueB <65536){
+                 ctxD.fillStyle="#00"+ valueB.toString(16);
+               }
+               else if(valueB < 1048476){
+                 ctxD.fillStyle="#0"+ valueB.toString(16);
+               }
+               else{
+                 ctxD.fillStyle="#"+ valueB.toString(16);
+               }
+               //console.log(ctxD.fillStyle);
                ctxD.fillRect(k,l,1,1);
              }
            }
@@ -445,10 +485,10 @@
         glContext.drawElements(glContext.TRIANGLE_STRIP, indices.length, glContext.UNSIGNED_SHORT, 0);
 
         //console.log(matrixResult);
-      /*  for(var i=0; i<matrixResult.dim;i++){
+        /*for(var i=0; i<matrixResult.dim;i++){
             for(var j=0; j<matrixResult.dim; i++){
-              //matrixResult.rows[i][j] = parseInt(rttTexture,16);//convertToInt(rttTexture);
-              console.log(parseInt(rttTexture,16));
+              //matrixResult.rows[i][j] = parseInt(color,16);//convertToInt(rttTexture);
+              console.log(parseInt(color,16));
             }
           }*/
           //console.log(matrixResult);
@@ -471,6 +511,7 @@
         console.log("initTextureFramebuffer");
         renderLoop();
 
+        matrixResult.display("resultTable");
       }
     </script>
 </head>
