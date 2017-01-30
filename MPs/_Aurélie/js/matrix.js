@@ -31,13 +31,12 @@ class Matrix{
     var table = document.getElementById(tableID);
     var tableRow, tableColumn;
     //console.log(this.rows.lenght);
-    for(var i=0; i<(this.dim*this.dim)-1; i++){
+    for(var i=0; i<this.dim; i++){
       tableRow = table.insertRow(-1);
     //  console.log("insertRow");
       for(var j=0; j<this.dim; j++){
         tableColumn=tableRow.insertCell(j);
         tableColumn.align = "center";
-        console.log("this.rows"+this.rows);
         tableColumn.innerHTML = this.rows[i][j];//Les indices vont trop loins
       }
     }

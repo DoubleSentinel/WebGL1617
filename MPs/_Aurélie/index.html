@@ -321,6 +321,7 @@
            //ctx.fillRect(0,0,c.width, c.height);//Rect 1px(height) -> dessine sur un pixel
 
            glContext.bindTexture(glContext.TEXTURE_2D, textureA);
+          // glContext.pixelStorei(glContext.UNPACK_FLIP_Y_WEBGL, true);
            glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, glContext.RGBA, glContext.UNSIGNED_BYTE, c);
            glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
            glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.NEAREST);
@@ -344,6 +345,7 @@
            //ctxD.fillStyle="#00FF00";
            //ctxD.fillRect(0,0,d.width, d.height);
            glContext.bindTexture(glContext.TEXTURE_2D, textureB);
+        //   glContext.pixelStorei(glContext.UNPACK_FLIP_Y_WEBGL, true);
            glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, glContext.RGBA, glContext.UNSIGNED_BYTE, d);
            glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
            glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.NEAREST);
@@ -401,6 +403,7 @@
         readFromTexture(glContext,"canvas2", textureA);
         readFromTexture(glContext, "canvas3", textureB);
         readFromTexture(glContext,"canvas4",rttTexture);
+        //console.log(rttTexture);
 
         //Conversion inverse
       /*  for(var i=0; i<matrixResult.dim;i++){
@@ -442,12 +445,12 @@
         glContext.drawElements(glContext.TRIANGLE_STRIP, indices.length, glContext.UNSIGNED_SHORT, 0);
 
         //console.log(matrixResult);
-        for(var i=0; i<matrixResult.dim;i++){
+      /*  for(var i=0; i<matrixResult.dim;i++){
             for(var j=0; j<matrixResult.dim; i++){
               //matrixResult.rows[i][j] = parseInt(rttTexture,16);//convertToInt(rttTexture);
               console.log(parseInt(rttTexture,16));
             }
-          }
+          }*/
           //console.log(matrixResult);
 
       }
@@ -473,7 +476,7 @@
 </head>
 <body>
   <h1>Calcul matriciel</h1>
-  <h3>Entrer un fichier JSON contenant une matrice</h3>
+  <h3>Entrer un fichier JSON contenant les matrices</h3>
   <input type="file" id="fileJson" name="files[]" accept=".json"/>
   <h3>Voici les deux matrices entrées</h3>
   <h4>Matrice A</h4>
@@ -485,9 +488,10 @@
   <br/>
   <input type="button" id="calculate" onclick="initWebGL()" value="Calculer"/>
   <br/>
-  <h2>Résultat</h2>
+  <h3>Résultat</h3>
   <table id="resultTable">
   </table>
+  <h4>Visualisation des matrices</h4>
   <p>webgl-canvas</p>
   <canvas id="webgl-canvas" width="128" height="128">
     HTML5 is not supported
@@ -552,10 +556,8 @@
           }
         }
         console.log("Matrice de résultat construites");
-        //matrixA.display('matrixATable');
-        //console.log("matrixB");
-        //matrixB.display('matrixBTable');
-        //console.log("Matrices affichées");
+        matrixA.display('matrixATable');
+        matrixB.display('matrixBTable');;
       }
     }
     //Clear the table
@@ -566,8 +568,6 @@
         table.deleteRow(row);
       }
     }
-    //Pour que tout le DOM soit construit avant
-    //initWebGL();
   </script>
 </body>
 </html>
