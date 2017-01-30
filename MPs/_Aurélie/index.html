@@ -52,12 +52,12 @@
       </script>
       <script id="shader-vs-Render" type="x-shader/x-vertex">
           attribute vec3 aVertexPosition;
-          attribute vec2 textCoord;
+          attribute vec2 aTextureCoord;//textCoord;
           uniform mat4 uMVMatrix;
           uniform mat4 uPMatrix;
           varying vec2 vTexCoord;
           void main(void) {
-            vTexCoord = textCoord;
+            vTexCoord = aTextureCoord;
             gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
           }
 
@@ -87,8 +87,9 @@
 
     var matrixA;
     var matrixB;
+    var matrixResult;
 
-    var result = [0,0,0,0];
+    //var result = [];//[0,0,0,0];
 
     var textureSize = 128;
 
@@ -122,7 +123,7 @@
 
       initShaderParameters();
 
-      //We define the planet progam as the current program
+      //We define the add progam as the current program
       glContext.useProgram(progList[0]);
     }
 
@@ -182,7 +183,9 @@
 
     //Conversion int to RGBA from : http://www.vizitsolutions.com/portfolio/webgl/gpgpu/speedBumps.html
     //Je ne sais pas si ces fonctions fonctionnent
-    function convertToRGBA(value){
+  /*  function convertToRGBA(value){
+      result = [];
+      console.log(value);
       var sign;
     //  sign = step(0, -value);
     if(-value < 0){
@@ -206,7 +209,7 @@
     /*  result.r = 128*sign + floor(exponent/2);
       result.g = (exponent - floor(exponent/2)*2)*128 + floor(mantissa*128);
       result.b = floor((mantissa-floor(mantissa*128)/128)*32768);*/
-      result.a = Math.floor(exponent/2);
+    /*  result.a = Math.floor(exponent/2);
       exponent = exponent - result.a*2;
       result.a = result.a + 128*sign;
 
@@ -224,11 +227,23 @@
 //From : http://www.vizitsolutions.com/portfolio/webgl/gpgpu/speedBumps.html
    function convertToInt(texel){
       var sign;
-      sign = -step(128, texel.a);
+      if(texel.a < 128){
+        sign = 0;
+      }
+      else{
+        sign = -1;
+      }
+      //sign = -Math.step(128, texel.a);
       texel.a += 128*sign;
 
       var exponent;
-      exponent = step(128, texel.b);
+      //exponent = step(128, texel.b);
+      if(texel.b < 128){
+        exponent = 0;
+      }
+      else{
+        exponent = 1;
+      }
       texel.b -= exponent*128;
       exponent +=2*texel.a-127;
 
@@ -236,8 +251,8 @@
       mantissa = texel.b*65536 + texel.g*256 + texel.r;
 
       var value;
-      value = sign * exp2(exponent)*(1+mantissa*exp2(-23));
-    }
+      value = sign * Math.exp2(exponent)*(1+mantissa*Math.exp2(-23));
+    }*/
 
 
 //Pris de la fonction createImageFromTexture de cyril
@@ -297,8 +312,9 @@
 
            for(var i = 0; i< matrixA.dim; i++){
              for(var j = 0; j<matrixA.dim; j++){
-               ctx.fillStyle=convertToRGBA(matrixA.rows[i][j]);
+               ctx.fillStyle="#00000"+ matrixA.rows[i][j].toString(16);
                ctx.fillRect(i,j,1,1);//Pour avoir un pixel
+               console.log(ctx.fillStyle);
              }
            }
            //ctx.fillStyle="#FF0000";
@@ -320,7 +336,8 @@
 
            for(var k=0; k<matrixB.dim; k++){
              for(var l=0; l<matrixB.dim; l++){
-               ctxD.fillStyle=convertToRGBA(matrixB.rows[k][l])
+               ctxD.fillStyle="#0000"+matrixB.rows[k][l].toString(16);
+               console.log(ctxD.fillStyle);
                ctxD.fillRect(k,l,1,1);
              }
            }
@@ -385,6 +402,14 @@
         readFromTexture(glContext, "canvas3", textureB);
         readFromTexture(glContext,"canvas4",rttTexture);
 
+        //Conversion inverse
+      /*  for(var i=0; i<matrixResult.dim;i++){
+          for(var j=0; j<matrixResult.dim; i++){
+            matrixResult.rows[i][j] = parseInt(rttTexture,16);//convertToInt(rttTexture);
+          }
+        }
+        console.log(matrixResult);*/
+
         /*
         * Render shader
         */
@@ -416,6 +441,14 @@
 
         glContext.drawElements(glContext.TRIANGLE_STRIP, indices.length, glContext.UNSIGNED_SHORT, 0);
 
+        //console.log(matrixResult);
+        for(var i=0; i<matrixResult.dim;i++){
+            for(var j=0; j<matrixResult.dim; i++){
+              //matrixResult.rows[i][j] = parseInt(rttTexture,16);//convertToInt(rttTexture);
+              console.log(parseInt(rttTexture,16));
+            }
+          }
+          //console.log(matrixResult);
 
       }
 
@@ -434,6 +467,7 @@
         initTextureFramebuffer();
         console.log("initTextureFramebuffer");
         renderLoop();
+
       }
     </script>
 </head>
@@ -506,6 +540,18 @@
           }
         }
         console.log("Matrices construites");
+        matrixResult = new Matrix(matrixA.dim);
+        var rowR = 0, colR = 0;
+        var sizeR = Math.pow(matrixResult.dim, 2);
+        for(var j = 0; j<sizeR; j++){
+          matrixResult.put(rowR, colR, 0);//Fout des NaN à la première colonne
+          colR++;
+          if((j+1)%matrixResult.dim == 0){
+            colR = 0;
+            rowR++;
+          }
+        }
+        console.log("Matrice de résultat construites");
         //matrixA.display('matrixATable');
         //console.log("matrixB");
         //matrixB.display('matrixBTable');
