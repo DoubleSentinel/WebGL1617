@@ -505,13 +505,13 @@
       }
 
       function convertFromRGBToInt(resultRGB, index){
-        console.log(resultRGB.toString());
-        var rgb = resultRGB[index+1];
-        console.log(rgb);
+      //  console.log(resultRGB.toString());
+        var rgb = resultRGB[index+0];
+        //console.log(rgb);
+        rgb = (rgb << 8) + resultRGB[index+1];
+        //console.log("rgb green "+rgb);
         rgb = (rgb << 8) + resultRGB[index+2];
-        console.log("rgb green "+rgb);
-        rgb = (rgb << 8) + resultRGB[index+3];
-        console.log("rgb blue "+rgb);
+        //console.log("rgb blue "+rgb);
         return rgb;
       }
 
@@ -534,14 +534,14 @@
         //matrixResult.display("resultTable");
         for(var i=0; i<matrixResult.dim;i++){
             for(var j=0; j<matrixResult.dim; j++){
-              matrixResult.rows[i][j] = convertFromRGBToInt(result, j*4+i*4)//parseInt(result,16);//convertToInt(rttTexture);
+              matrixResult.rows[i][j] = convertFromRGBToInt(result, i*4+j*4)//parseInt(result,16);//convertToInt(rttTexture);
             //matrixResult.rows[i][j]=1;
               //console.log(parseInt(color,16));
             }
           }
           matrixResult.display('resultTable');
 
-          //console.log(convertFromRGBToInt(new Uint8Array(0,0,0,125), 0));
+          console.log(convertFromRGBToInt(new Uint8Array([0,0,1,0]), 0));
 
 
       }
