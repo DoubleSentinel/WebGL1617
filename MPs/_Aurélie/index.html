@@ -30,17 +30,21 @@
     </script>
     <!-- fragment shader -->
     <script id="shader-fs" type="x-shader/x-fragment">
-			#ifdef GL_ES
+      #ifdef GL_ES
 				precision highp float;
 			#endif
        varying vec2 vTextureCoord;
         uniform sampler2D uColorTexture;
         uniform sampler2D uColorTexture2;
         varying vec4 vColor;
+
         void main(void) {
             vec4 color = texture2D(uColorTexture, vTextureCoord);
             vec4 color2 = texture2D(uColorTexture2, vTextureCoord);
-            gl_FragColor = color+color2;
+
+            vec4 finalColor = color + color2;
+
+            gl_FragColor = finalColor;
         }
     </script>
 
@@ -327,11 +331,13 @@
                else if(value < 256){
                  ctx.fillStyle="#0000"+ value.toString(16);
                }
-               else if(value <4096){
+               else if(value < 4096){
                  ctx.fillStyle="#000"+ value.toString(16);
+                 console.log(ctx.fillStyle);
                }
                else if (value < 65536){
                  ctx.fillStyle="#00"+ value.toString(16);
+                 console.log(ctx.fillStyle);
                }
                else if(value < 1048476){
                  ctx.fillStyle="#0"+ value.toString(16);
@@ -371,7 +377,7 @@
                else if(valueB < 256){
                  ctxD.fillStyle="#0000"+ valueB.toString(16);
                }
-               else if(valueB <4096){
+               else if(valueB < 4096){
                  ctxD.fillStyle="#000"+ valueB.toString(16);
                }
                else if (valueB <65536){
@@ -541,7 +547,7 @@
           }
           matrixResult.display('resultTable');
 
-          console.log(convertFromRGBToInt(new Uint8Array([0,0,1,0]), 0));
+          //console.log(convertFromRGBToInt(new Uint8Array([0,0,1,0]), 0));
 
 
       }
