@@ -37,7 +37,7 @@ class Matrix{
       for(var j=0; j<this.dim; j++){
         tableColumn=tableRow.insertCell(j);
         tableColumn.align = "center";
-        tableColumn.innerHTML = this.rows[i][j];//Les indices vont trop loins
+        tableColumn.innerHTML = this.rows[i][j];
       }
     }
   }

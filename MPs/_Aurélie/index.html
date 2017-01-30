@@ -92,7 +92,7 @@
     var matrixB;
     var matrixResult;
 
-    //var result = [];//[0,0,0,0];
+    var result;//[0,0,0,0];
 
     var textureSize = 128;
 
@@ -281,6 +281,7 @@
 
         var imageData = context.createImageData(width, height);
         imageData.data.set(pixels);
+        //console.log(imageData);
         context.putImageData(imageData,0,0);
       }
 
@@ -300,6 +301,10 @@
         glContext.renderbufferStorage(glContext.RENDERBUFFER, glContext.DEPTH_COMPONENT16, rttFrameBuffer.width, rttFrameBuffer.height);
         glContext.framebufferTexture2D(glContext.FRAMEBUFFER, glContext.COLOR_ATTACHMENT0, glContext.TEXTURE_2D,rttTexture , 0);
         glContext.framebufferRenderbuffer(glContext.FRAMEBUFFER, glContext.DEPTH_ATTACHMENT, glContext.RENDERBUFFER, renderbuffer);
+
+        //result = new Uint8Array(textureSize*textureSize*4);
+        //glContext.readPixels(0,0,textureSize, textureSize,glContext.RGBA,glContext.UNSIGNED_BYTE, result);
+        //console.log(result);
 
         glContext.bindTexture(glContext.TEXTURE_2D, null);
         glContext.bindRenderbuffer(glContext.RENDERBUFFER, null);
@@ -325,7 +330,7 @@
                else if(value <4096){
                  ctx.fillStyle="#000"+ value.toString(16);
                }
-               else if (value <65536){
+               else if (value < 65536){
                  ctx.fillStyle="#00"+ value.toString(16);
                }
                else if(value < 1048476){
@@ -445,13 +450,19 @@
         readFromTexture(glContext,"canvas4",rttTexture);
         //console.log(rttTexture);
 
-        //Conversion inverse
-      /*  for(var i=0; i<matrixResult.dim;i++){
-          for(var j=0; j<matrixResult.dim; i++){
-            matrixResult.rows[i][j] = parseInt(rttTexture,16);//convertToInt(rttTexture);
+      /*  var result = new Uint8Array(textureSize*textureSize*4);
+        glContext.bindFramebuffer(glContext.FRAMEBUFFER, rttFrameBuffer);
+        glContext.readPixels(0,0,textureSize, textureSize,glContext.RGBA,glContext.UNSIGNED_BYTE, result);
+        glContext.bindFramebuffer(glContext.FRAMEBUFFER, null);
+        console.log(result);
+
+        for(var i=0; i<matrixResult.dim;i++){
+            for(var j=0; j<matrixResult.dim; i++){
+              matrixResult.rows[i][j] = parseInt(result,16);//convertToInt(rttTexture);
+              //console.log(parseInt(color,16));
+            }
           }
-        }
-        console.log(matrixResult);*/
+          matrixResult.display('resultTable');*/
 
         /*
         * Render shader
@@ -484,15 +495,24 @@
 
         glContext.drawElements(glContext.TRIANGLE_STRIP, indices.length, glContext.UNSIGNED_SHORT, 0);
 
-        //console.log(matrixResult);
-        /*for(var i=0; i<matrixResult.dim;i++){
-            for(var j=0; j<matrixResult.dim; i++){
-              //matrixResult.rows[i][j] = parseInt(color,16);//convertToInt(rttTexture);
-              console.log(parseInt(color,16));
-            }
-          }*/
-          //console.log(matrixResult);
 
+        result = new Uint8Array(textureSize*textureSize*4);
+        glContext.bindFramebuffer(glContext.FRAMEBUFFER, rttFrameBuffer);
+        glContext.readPixels(0,0,matrixResult.dim, matrixResult.dim,glContext.RGBA,glContext.UNSIGNED_BYTE, result);
+        glContext.bindFramebuffer(glContext.FRAMEBUFFER, null);
+        //console.log(result);
+
+      }
+
+      function convertFromRGBToInt(resultRGB, index){
+        console.log(resultRGB.toString());
+        var rgb = resultRGB[index+1];
+        console.log(rgb);
+        rgb = (rgb << 8) + resultRGB[index+2];
+        console.log("rgb green "+rgb);
+        rgb = (rgb << 8) + resultRGB[index+3];
+        console.log("rgb blue "+rgb);
+        return rgb;
       }
 
       function initWebGL(){
@@ -511,7 +531,19 @@
         console.log("initTextureFramebuffer");
         renderLoop();
 
-        matrixResult.display("resultTable");
+        //matrixResult.display("resultTable");
+        for(var i=0; i<matrixResult.dim;i++){
+            for(var j=0; j<matrixResult.dim; j++){
+              matrixResult.rows[i][j] = convertFromRGBToInt(result, j*4+i*4)//parseInt(result,16);//convertToInt(rttTexture);
+            //matrixResult.rows[i][j]=1;
+              //console.log(parseInt(color,16));
+            }
+          }
+          matrixResult.display('resultTable');
+
+          //console.log(convertFromRGBToInt(new Uint8Array(0,0,0,125), 0));
+
+
       }
     </script>
 </head>
@@ -589,13 +621,13 @@
         var rowR = 0, colR = 0;
         var sizeR = Math.pow(matrixResult.dim, 2);
         for(var j = 0; j<sizeR; j++){
-          matrixResult.put(rowR, colR, 0);//Fout des NaN à la première colonne
-          colR++;
+          matrixResult.put(rowR, colR++, 0);//Fout des NaN à la première colonne
           if((j+1)%matrixResult.dim == 0){
             colR = 0;
             rowR++;
           }
         }
+        console.log(matrixResult);
         console.log("Matrice de résultat construites");
         matrixA.display('matrixATable');
         matrixB.display('matrixBTable');;
