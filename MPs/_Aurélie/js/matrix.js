@@ -1,9 +1,8 @@
 class Matrix{
-
-/*dim est un entier, rows un tableau qu'il faudra décomposer*/
+//Represent a matrix
   constructor(dim){
-    this.dim = dim; //représente la dimension de la matrice. On va commencer avec des matrices carrées.
-    this.rows = []//représente la matrice avec un tableau de nombre.
+    this.dim = dim;
+    this.rows = [];
   }
   copy(){
     var matrix = new Matrix(this.dim);
@@ -21,19 +20,16 @@ class Matrix{
     var row = this.rows[row];
     row[column] = value;
   }
-  get(row, column){//Ne marche pas
+  get(row, column){
     return this.rows[row][column];
   }
-  //Affichage, qui ne marche pas pour l'instant
+
+//Display the matrix on the html
   display(tableID){
-    //clearTable(tableID);
-    //console.log("display function");
     var table = document.getElementById(tableID);
     var tableRow, tableColumn;
-    //console.log(this.rows.lenght);
     for(var i=0; i<this.dim; i++){
       tableRow = table.insertRow(-1);
-    //  console.log("insertRow");
       for(var j=0; j<this.dim; j++){
         tableColumn=tableRow.insertCell(j);
         tableColumn.align = "center";

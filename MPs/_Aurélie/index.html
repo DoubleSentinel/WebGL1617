@@ -17,14 +17,11 @@
     <script id="shader-vs" type="x-shader/x-vertex">
       attribute vec3 aVertexPosition;
       attribute vec2 aTextureCoord;
-    //  attribute vec4 aColor;
       uniform mat4 uMVMatrix;
       uniform mat4 uPMatrix;
       varying vec2 vTextureCoord;
-    //  varying vec4 vColor;
       void main(void) {
         vTextureCoord = aTextureCoord;
-        //vColor = aColor;
         gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
       }
     </script>
@@ -84,10 +81,8 @@
     <!--WebGL logique-->
     <script>
 
-    //var color=[];
-
     //Texture from the book
-    var texColorTab = new Array(); //stocke les textures
+    var texColorTab = new Array();
     var textCoords = [];
     var textureA;
     var textureB;
@@ -96,14 +91,14 @@
     var matrixB;
     var matrixResult;
 
-    var result;//[0,0,0,0];
+    var result;
 
     var textureSize = 128;
 
     var rttFrameBuffer = null;
     var rttTexture = null;
 
-    // parametre pour la gestion des multi programme contenant les shader
+    // parametre for multi shader
       var progList = [];
       var ptr = new Object();
 
@@ -117,7 +112,6 @@
     var pMatrix = mat4.create();
 
     function initShaders(){
-      //Shaders de traitement
       var vertexShader = getTextContent("shader-vs");
       var fragmentShader = getTextContent("shader-fs");
       progList[0] = createProgram(glContext, vertexShader, fragmentShader);
@@ -137,7 +131,7 @@
     function initShaderParameters(){
       ptr.vertexPositionAttribute = glContext.getAttribLocation(progList[0], "aVertexPosition");
       glContext.enableVertexAttribArray(ptr.vertexPositionAttribute);
-    //  prg.colorAttribute = glContext.getAttribLocation(prg, "aColor");
+
       ptr.textureCoordsAttribute  = glContext.getAttribLocation(progList[0], "aTextureCoord");
       glContext.enableVertexAttribArray(ptr.textureCoordsAttribute);
 
@@ -161,10 +155,6 @@
     }
 
     function initBuffers(){
-    /*  vertices = [ 1.0, 1.0, 0.1,
-                   1.0, -1.0, 0.1,
-                  -1.0,  1.0, 0.1,
-                  -1.0,  -1.0, 0.1 ];*/
       vertices.push(-1.0, -1.0, 0.1);
       vertices.push(-1.0, 1.0, 0.1);
       vertices.push(1.0,  -1.0, 0.1);
@@ -176,7 +166,7 @@
       colors.push(0.0, 0.0, 1.0, 1.0);
 
       indices.push(0, 1, 2, 3);
-      //indices = [ 0, 1, 2, 3 ];
+
       textCoords = [  0.0, 0.0,
                       0.0, 1.0,
                       1.0, 0.0,
@@ -188,81 +178,7 @@
       texColorTab = getArrayBufferWithArray(textCoords);
     }
 
-    //Conversion int to RGBA from : http://www.vizitsolutions.com/portfolio/webgl/gpgpu/speedBumps.html
-    //Je ne sais pas si ces fonctions fonctionnent
-  /*  function convertToRGBA(value){
-      result = [];
-      console.log(value);
-      var sign;
-    //  sign = step(0, -value);
-    if(-value < 0){
-      sign = 0;
-    }
-    else{
-      sign = 1;
-    }
-      value = Math.abs(value);
-
-      var exponent;
-      //floor arrondi les nombres à l'entier le plus proche
-      exponent = Math.floor(Math.log2(value));
-
-      var mantissa;
-      mantissa = value*Math.pow(2, -exponent)-1;
-
-      exponent = exponent+127;
-
-      //var result = vec4(0,0,0,0);
-    /*  result.r = 128*sign + floor(exponent/2);
-      result.g = (exponent - floor(exponent/2)*2)*128 + floor(mantissa*128);
-      result.b = floor((mantissa-floor(mantissa*128)/128)*32768);*/
-    /*  result.a = Math.floor(exponent/2);
-      exponent = exponent - result.a*2;
-      result.a = result.a + 128*sign;
-
-      result.b = Math.floor(mantissa * 128);
-      mantissa = mantissa - result.b/128;
-      result.b = result.b + exponent*128;
-
-      result.g = Math.floor(mantissa*32768);
-      mantissa = mantissa - result.g/32768;
-
-      result.r = Math.floor(mantissa*8388608);
-
-    }
-
-//From : http://www.vizitsolutions.com/portfolio/webgl/gpgpu/speedBumps.html
-   function convertToInt(texel){
-      var sign;
-      if(texel.a < 128){
-        sign = 0;
-      }
-      else{
-        sign = -1;
-      }
-      //sign = -Math.step(128, texel.a);
-      texel.a += 128*sign;
-
-      var exponent;
-      //exponent = step(128, texel.b);
-      if(texel.b < 128){
-        exponent = 0;
-      }
-      else{
-        exponent = 1;
-      }
-      texel.b -= exponent*128;
-      exponent +=2*texel.a-127;
-
-      var mantissa;
-      mantissa = texel.b*65536 + texel.g*256 + texel.r;
-
-      var value;
-      value = sign * Math.exp2(exponent)*(1+mantissa*Math.exp2(-23));
-    }*/
-
-
-//Pris de la fonction createImageFromTexture de cyril
+    //Create a texture from the canvas
       function readFromTexture(gl, canvas, texture){
         var canvas = document.getElementById(canvas);
         var context = canvas.getContext('2d');
@@ -275,17 +191,13 @@
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
         //readFromTexture
-        var pixels = new Uint8Array(width*height*4);//Pour pouvoir prendre les float de la texture.
-        //Ne marche finalement pas avec des float, je suis obligée de les prendre en byte. Possibilité d'avoir UNSIGNED_SHORT. Ne semble pas marcher par rapport
-        //au framebuffer. Donc ce sera avec des bytes.
+        var pixels = new Uint8Array(width*height*4);
         gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
-        //console.log(pixels);
 
         gl.deleteFramebuffer(framebuffer);
 
         var imageData = context.createImageData(width, height);
         imageData.data.set(pixels);
-        //console.log(imageData);
         context.putImageData(imageData,0,0);
       }
 
@@ -294,7 +206,7 @@
         glContext.bindFramebuffer(glContext.FRAMEBUFFER, rttFrameBuffer);
         rttFrameBuffer.width = textureSize;
         rttFrameBuffer.height = textureSize;
-        rttTexture = glContext.createTexture();//A voir
+        rttTexture = glContext.createTexture();
         glContext.bindTexture(glContext.TEXTURE_2D, rttTexture);
         glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.LINEAR);
         glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.LINEAR_MIPMAP_NEAREST);
@@ -306,16 +218,13 @@
         glContext.framebufferTexture2D(glContext.FRAMEBUFFER, glContext.COLOR_ATTACHMENT0, glContext.TEXTURE_2D,rttTexture , 0);
         glContext.framebufferRenderbuffer(glContext.FRAMEBUFFER, glContext.DEPTH_ATTACHMENT, glContext.RENDERBUFFER, renderbuffer);
 
-        //result = new Uint8Array(textureSize*textureSize*4);
-        //glContext.readPixels(0,0,textureSize, textureSize,glContext.RGBA,glContext.UNSIGNED_BYTE, result);
-        //console.log(result);
-
         glContext.bindTexture(glContext.TEXTURE_2D, null);
         glContext.bindRenderbuffer(glContext.RENDERBUFFER, null);
         glContext.bindFramebuffer(glContext.FRAMEBUFFER, null);//Unbind texture
       }
 
-      function createBaseTexture(matrixA, matrixB){//Dessiner sur la canvas et le passer en texture Donc c'est là qu'il faudra venir avec les matrices
+      //Draw on the canvas
+      function createBaseTexture(matrixA, matrixB){
           textureA = glContext.createTexture();
            var c = document.createElement("canvas");
            c.width = 128;
@@ -346,15 +255,11 @@
                  ctx.fillStyle="#"+ value.toString(16);
                }
 
-               ctx.fillRect(i,j,1,1);//Pour avoir un pixel
-               //console.log(ctx.fillStyle);
+               ctx.fillRect(i,j,1,1);
              }
            }
-           //ctx.fillStyle="#FF0000";
-           //ctx.fillRect(0,0,c.width, c.height);//Rect 1px(height) -> dessine sur un pixel
 
            glContext.bindTexture(glContext.TEXTURE_2D, textureA);
-          // glContext.pixelStorei(glContext.UNPACK_FLIP_Y_WEBGL, true);
            glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, glContext.RGBA, glContext.UNSIGNED_BYTE, c);
            glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
            glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.NEAREST);
@@ -389,14 +294,10 @@
                else{
                  ctxD.fillStyle="#"+ valueB.toString(16);
                }
-               //console.log(ctxD.fillStyle);
                ctxD.fillRect(k,l,1,1);
              }
            }
-           //ctxD.fillStyle="#00FF00";
-           //ctxD.fillRect(0,0,d.width, d.height);
            glContext.bindTexture(glContext.TEXTURE_2D, textureB);
-        //   glContext.pixelStorei(glContext.UNPACK_FLIP_Y_WEBGL, true);
            glContext.texImage2D(glContext.TEXTURE_2D, 0, glContext.RGBA, glContext.RGBA, glContext.UNSIGNED_BYTE, d);
            glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MIN_FILTER, glContext.NEAREST);
            glContext.texParameteri(glContext.TEXTURE_2D, glContext.TEXTURE_MAG_FILTER, glContext.NEAREST);
@@ -405,8 +306,7 @@
       }
 
 
-      function drawScene(){//est appelée dans renderLoop() dans les webglTools
-        //glContext.clearColor(0.0,0.0,0.0,1.0);
+      function drawScene(){
 
         glContext.useProgram(progList[0]);
 
@@ -424,7 +324,7 @@
 
         glContext.activeTexture(glContext.TEXTURE0);
         glContext.bindTexture(glContext.TEXTURE_2D, textureA);
-        glContext.uniform1i(ptr.uColorTexture, 0);//Lien pour transmettre la texture au fragment shader
+        glContext.uniform1i(ptr.uColorTexture, 0);
 
         glContext.activeTexture(glContext.TEXTURE1);
         glContext.bindTexture(glContext.TEXTURE_2D, textureB);
@@ -434,13 +334,8 @@
         glContext.bindBuffer(glContext.ARRAY_BUFFER, vertexBuffer);
         glContext.vertexAttribPointer(ptr.vertexPositionAttribute, 3, glContext.FLOAT, false, 0, 0);
 
-      //  glContext.bindBuffer(glContext.ARRAY_BUFFER, colorBuffer);
-      //  glContext.vertexAttribPointer(prg.colorAttribute,4, glContext.FLOAT, false, 0, 0);
-
         glContext.bindBuffer(glContext.ARRAY_BUFFER, texColorTab);
         glContext.vertexAttribPointer(ptr.textureCoordsAttribute, 2, glContext.FLOAT, false, 0, 0);
-
-        //console.log(indices.length);
 
         glContext.drawElements(glContext.TRIANGLE_STRIP, indices.length, glContext.UNSIGNED_SHORT, 0);
 
@@ -448,27 +343,11 @@
         glContext.generateMipmap(glContext.TEXTURE_2D);
         glContext.bindTexture(glContext.TEXTURE_2D, null);
 
-          // mis en place du buffer frame
           glContext.bindFramebuffer(glContext.FRAMEBUFFER, null);
 
         readFromTexture(glContext,"canvas2", textureA);
         readFromTexture(glContext, "canvas3", textureB);
         readFromTexture(glContext,"canvas4",rttTexture);
-        //console.log(rttTexture);
-
-      /*  var result = new Uint8Array(textureSize*textureSize*4);
-        glContext.bindFramebuffer(glContext.FRAMEBUFFER, rttFrameBuffer);
-        glContext.readPixels(0,0,textureSize, textureSize,glContext.RGBA,glContext.UNSIGNED_BYTE, result);
-        glContext.bindFramebuffer(glContext.FRAMEBUFFER, null);
-        console.log(result);
-
-        for(var i=0; i<matrixResult.dim;i++){
-            for(var j=0; j<matrixResult.dim; i++){
-              matrixResult.rows[i][j] = parseInt(result,16);//convertToInt(rttTexture);
-              //console.log(parseInt(color,16));
-            }
-          }
-          matrixResult.display('resultTable');*/
 
         /*
         * Render shader
@@ -493,9 +372,6 @@
         glContext.bindBuffer(glContext.ARRAY_BUFFER, vertexBuffer);
         glContext.vertexAttribPointer(ptr.vertexPositionAttributeRender, 3, glContext.FLOAT, false, 0, 0);
 
-      //  glContext.bindBuffer(glContext.ARRAY_BUFFER, colorBuffer);
-      //  glContext.vertexAttribPointer(prg.colorAttribute,4, glContext.FLOAT, false, 0, 0);
-
         glContext.bindBuffer(glContext.ARRAY_BUFFER, texColorTab);
         glContext.vertexAttribPointer(ptr.textureCoordsAttributeRender, 2, glContext.FLOAT, false, 0, 0);
 
@@ -506,29 +382,22 @@
         glContext.bindFramebuffer(glContext.FRAMEBUFFER, rttFrameBuffer);
         glContext.readPixels(0,0,matrixResult.dim, matrixResult.dim,glContext.RGBA,glContext.UNSIGNED_BYTE, result);
         glContext.bindFramebuffer(glContext.FRAMEBUFFER, null);
-        //console.log(result);
 
       }
 
       function convertFromRGBToInt(resultRGB, index){
-      //  console.log(resultRGB.toString());
         var rgb = resultRGB[index+0];
-        //console.log(rgb);
         rgb = (rgb << 8) + resultRGB[index+1];
-        //console.log("rgb green "+rgb);
         rgb = (rgb << 8) + resultRGB[index+2];
-        //console.log("rgb blue "+rgb);
         return rgb;
       }
 
       function initWebGL(){
         glContext = getGLContext('webgl-canvas');
         console.log("glContext "+glContext);
-        var float_texture = glContext.getExtension('OES_texture_float');//active l'extension
-        //initProgram();
+        var float_texture = glContext.getExtension('OES_texture_float');
         initShaders();
         console.log("initShaders");
-        //prg = glContext.createProgram();
         initBuffers();
         console.log("initBuffers");
         createBaseTexture(matrixA, matrixB);
@@ -537,18 +406,12 @@
         console.log("initTextureFramebuffer");
         renderLoop();
 
-        //matrixResult.display("resultTable");
         for(var i=0; i<matrixResult.dim;i++){
             for(var j=0; j<matrixResult.dim; j++){
-              matrixResult.rows[i][j] = convertFromRGBToInt(result, i*4+j*4)//parseInt(result,16);//convertToInt(rttTexture);
-            //matrixResult.rows[i][j]=1;
-              //console.log(parseInt(color,16));
+              matrixResult.rows[i][j] = convertFromRGBToInt(result, i*4+j*4);
             }
           }
           matrixResult.display('resultTable');
-
-          //console.log(convertFromRGBToInt(new Uint8Array([0,0,1,0]), 0));
-
 
       }
     </script>
@@ -587,7 +450,7 @@
   <script>
   document.getElementById("fileJson").addEventListener("change",changeFileJson,false);
 
-    //Récupération du fichier.
+    //file recup
     function changeFileJson(evt){
       var file = evt.target.files[0];
       var fileJson = evt.target;
@@ -598,7 +461,6 @@
         createMatrix(parseText);
       };
       reader.readAsText(fileJson.files[0]);
-      //console.log("Fichier lu");
     }
     //Create matrix with the JSON file given
     function createMatrix(textJson){
@@ -609,7 +471,6 @@
         dimension = textJson.n;
         matrixA = new Matrix(dimension);
         matrixB = new Matrix(dimension);
-        //Remplissage des matrices
         var size = Math.pow(dimension,2);
         var rowA = 0, rowB =0, colA = 0, colB=0;
         for(var i=0; i<size; i++){
@@ -627,7 +488,7 @@
         var rowR = 0, colR = 0;
         var sizeR = Math.pow(matrixResult.dim, 2);
         for(var j = 0; j<sizeR; j++){
-          matrixResult.put(rowR, colR++, 0);//Fout des NaN à la première colonne
+          matrixResult.put(rowR, colR++, 0);
           if((j+1)%matrixResult.dim == 0){
             colR = 0;
             rowR++;
