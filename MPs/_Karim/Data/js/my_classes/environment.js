@@ -17,12 +17,12 @@ function initSkyboxesReferences()
     var skyboxes = [];
 
     skyboxes[0] = [];
-    skyboxes[0].push("./assets/skybox/TropicalSunnyDayRight2048.png");
-    skyboxes[0].push("./assets/skybox/TropicalSunnyDayLeft2048.png");
-    skyboxes[0].push("./assets/skybox/TropicalSunnyDayFront2048.png");
-    skyboxes[0].push("./assets/skybox/TropicalSunnyDayBack2048.png");
-    skyboxes[0].push("./assets/skybox/TropicalSunnyDayUp2048.png");
-    skyboxes[0].push("./assets/skybox/TropicalSunnyDayDown2048.png");
+    skyboxes[0].push("Data/assets/skybox/TropicalSunnyDayRight2048.png");
+    skyboxes[0].push("Data/assets/skybox/TropicalSunnyDayLeft2048.png");
+    skyboxes[0].push("Data/assets/skybox/TropicalSunnyDayFront2048.png");
+    skyboxes[0].push("Data/assets/skybox/TropicalSunnyDayBack2048.png");
+    skyboxes[0].push("Data/assets/skybox/TropicalSunnyDayUp2048.png");
+    skyboxes[0].push("Data/assets/skybox/TropicalSunnyDayDown2048.png");
 
     return skyboxes;
 }

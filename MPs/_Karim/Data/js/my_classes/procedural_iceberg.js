@@ -132,7 +132,7 @@ class ProceduralIceberg {
     }
 
     initTexture(){
-        initTextureWithImage('./assets/textures/iceberg0.jpg',this.texture);
+        initTextureWithImage('Data/assets/textures/iceberg0.jpg',this.texture);
     }
 
     initBuffers() {

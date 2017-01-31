@@ -2,11 +2,11 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8"/>
-    <link rel="stylesheet" href="../css/stylesheet.css">
-    <script src="tools/gl-matrix-min.js"></script>
+    <link rel="stylesheet" href="Data/css/stylesheet.css">
+    <script src="Data/tools/gl-matrix-min.js"></script>
     <script src="../sharedJs/debug/webgl-debug.js"></script>
-    <script src="tools/webglTools.js"></script>
-    <script src="tools/commonFunctions.js"></script>
+    <script src="Data/tools/webglTools.js"></script>
+    <script src="Data/tools/commonFunctions.js"></script>
 
     <!-- /////////////////\\\\\\\\\\\\\\\\ -->
     <!-- //////////VERTEX SHADER\\\\\\\\\\ -->
@@ -35,11 +35,6 @@
 			    gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
 			}
         }
-
-
-
-
-
     </script>
 
     <!-- //////////////////\\\\\\\\\\\\\\\\\ -->
@@ -64,10 +59,6 @@
 			}
 		}
 
-
-
-
-
     </script>
 
     <!-- ///////////////////// \\\\\\\\\\\\\\\\\\ -->
@@ -85,10 +76,6 @@
 
 			 }
 
-
-
-
-
     </script>
 
     <!-- ///////////////////// \\\\\\\\\\\\\\\\\\\\ -->
@@ -102,27 +89,23 @@
 				  gl_FragColor = textureCube(uSkybox, vCoords);
 			 }
 
-
-
-
-
     </script>
 
-    <script src="js/alpha-shape/alphaShape.js"></script>
-    <script src="js/my_classes/procedural_iceberg.js"></script>
-    <script src="js/my_classes/blockyIceberg.js"></script>
-    <script src="js/my_classes/math.js"></script>
-    <script src="js/quickhull3d/lib/QuickHull.js"></script>
-    <script src="js/quickhull3d/lib/Face.js"></script>
-    <script src="js/quickhull3d/lib/HalfEdge.js"></script>
-    <script src="js/quickhull3d/lib/index.js"></script>
-    <script src="js/quickhull3d/lib/Vertex.js"></script>
-    <script src="js/quickhull3d/lib/dependencies.js"></script>
-    <script src="js/quickhull3d/lib/VertexList.js"></script>
-    <script src="js/my_classes/environment.js"></script>
-    <script src="tools/skybox.js"></script>
-    <script src="tools/skybox-loader.js"></script>
-    <script src="js/my_classes/scene.js"></script>
+    <script src="Data/js/alpha-shape/alphaShape.js"></script>
+    <script src="Data/js/my_classes/procedural_iceberg.js"></script>
+    <script src="Data/js/my_classes/blockyIceberg.js"></script>
+    <script src="Data/js/my_classes/math.js"></script>
+    <script src="Data/js/quickhull3d/lib/QuickHull.js"></script>
+    <script src="Data/js/quickhull3d/lib/Face.js"></script>
+    <script src="Data/js/quickhull3d/lib/HalfEdge.js"></script>
+    <script src="Data/js/quickhull3d/lib/index.js"></script>
+    <script src="Data/js/quickhull3d/lib/Vertex.js"></script>
+    <script src="Data/js/quickhull3d/lib/dependencies.js"></script>
+    <script src="Data/js/quickhull3d/lib/VertexList.js"></script>
+    <script src="Data/js/my_classes/environment.js"></script>
+    <script src="Data/tools/skybox.js"></script>
+    <script src="Data/tools/skybox-loader.js"></script>
+    <script src="Data/js/my_classes/scene.js"></script>
 
 </head>
 <body onload="initWebGL()">
@@ -146,11 +129,13 @@
 <label>Position: x:</label><input type="text" id="x" onkeyup="updateUserInput(this.id, this.value)">
 <label>&nbsp;y:</label><input type="text" id="y" onkeyup="updateUserInput(this.id, this.value)">
 <label>&nbsp;Height from water level:</label><input type="text" id="h" onkeyup="updateUserInput(this.id, this.value)">
-<label>&nbsp;Number of points (precision of iceberg):</label><input type="text" id="pts" value="20" onkeyup="updateUserInput(this.id, this.value)">
-<label>&nbsp;Alpha (for Alpha Shape algorithm):</label><input type="text" id="a" value="0.05" onkeyup="updateUserInput(this.id, this.value)"><br/>
+<label>&nbsp;Number of points (precision of iceberg):</label><input type="text" id="pts" value="20"
+                                                                    onkeyup="updateUserInput(this.id, this.value)">
+<label>&nbsp;Alpha (for Alpha Shape algorithm):</label><input type="text" id="a" value="0.05"
+                                                              onkeyup="updateUserInput(this.id, this.value)"><br/>
 
 <button id="clear" onclick="updateIcebergs(this.id, 0,0,0,0)">Clear Scene</button>
-<script src="tools/mouseMotionHandling.js"></script>
+<script src="Data/tools/mouseMotionHandling.js"></script>
 </body>
 
 </html>
