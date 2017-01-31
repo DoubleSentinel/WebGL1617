@@ -255,7 +255,7 @@
                  ctx.fillStyle="#"+ value.toString(16);
                }
 
-               ctx.fillRect(i,j,1,1);
+               ctx.fillRect(j,i,1,1);
              }
            }
 
@@ -294,7 +294,7 @@
                else{
                  ctxD.fillStyle="#"+ valueB.toString(16);
                }
-               ctxD.fillRect(k,l,1,1);
+               ctxD.fillRect(l,k,1,1);
              }
            }
            glContext.bindTexture(glContext.TEXTURE_2D, textureB);
@@ -406,9 +406,12 @@
         console.log("initTextureFramebuffer");
         renderLoop();
 
+        //result.forEach((e,ix) =>result[ix] = 1.0);
+        var cpt = 0;
         for(var i=0; i<matrixResult.dim;i++){
             for(var j=0; j<matrixResult.dim; j++){
-              matrixResult.rows[i][j] = convertFromRGBToInt(result, i*4+j*4);
+              matrixResult.rows[i][j] = convertFromRGBToInt(result, cpt);
+              cpt += 4;
             }
           }
           matrixResult.display('resultTable');
