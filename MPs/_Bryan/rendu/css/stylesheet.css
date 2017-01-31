@@ -1,0 +1,22 @@
+/**
+ * My CSS
+ * By Lucas Beltrame
+ */
+
+body {
+	font-family: 'Open Sans', Arial, serif;
+	background-color: #FFFFFF;
+}
+
+.modal-title{
+	text-align: center;
+}
+
+#audio_file{
+	margin: auto;
+}
+
+#player{
+    margin: auto;
+    width: 100%;
+}
