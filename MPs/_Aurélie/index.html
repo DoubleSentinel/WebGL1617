@@ -155,10 +155,10 @@
     }
 
     function initBuffers(){
-      vertices.push(-1.0, -1.0, 0.1);
-      vertices.push(-1.0, 1.0, 0.1);
-      vertices.push(1.0,  -1.0, 0.1);
-      vertices.push(1.0,  1.0, 0.1);
+      vertices.push(-1.0, -1.0, 0.0);
+      vertices.push(-1.0, 1.0, 0.0);
+      vertices.push(1.0,  -1.0, 0.0);
+      vertices.push(1.0,  1.0, 0.0);
 
       colors.push(0.0, 0.0, 1.0, 1.0);
       colors.push(0.0, 0.0, 1.0, 1.0);
@@ -452,6 +452,7 @@
 
     //file recup
     function changeFileJson(evt){
+      console.log("read");
       var file = evt.target.files[0];
       var fileJson = evt.target;
       var reader = new FileReader();

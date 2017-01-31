@@ -1,4 +1,4 @@
-class Matrix{
+class Matrix{ //class doesn't work with fireforx < 45 : https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Classes#Browser_compatibility
 //Represent a matrix
   constructor(dim){
     this.dim = dim;
